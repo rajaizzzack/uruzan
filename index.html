@@ -2158,14 +2158,16 @@ function nInv() {
   const I = Z.inv, L = I.list.slice().reverse(), ym = nowYM(), yr = ym.slice(0, 4), paid = L.filter(i => i.paid);
   const mo = nSum(paid.filter(i => (i.paidOn || i.date).slice(0, 7) === ym), nInvTot), ty = nSum(paid.filter(i => (i.paidOn || i.date).slice(0, 4) === yr), nInvTot), un = nSum(L.filter(i => !i.paid), nInvTot), me = I.me;
   nE("zc-inv").innerHTML = `<div class="card"><div class="sum"><div><div class="mut">Dapat bulan ni</div><b>${fmt(mo)}</b></div><div><div class="mut">Dapat tahun ni</div><b>${fmt(ty)}</b></div></div><div class="mut">Belum bayar: <b>${fmt(un)}</b></div></div>
-  <details class="card frm" data-nd="me" ${nInvOpen.has("me") ? "open" : ""}><summary><b>👤 Maklumat saya (keluar atas invois)</b></summary><div class="g1" style="margin-top:8px"><label class="mut">Nama / syarikat ${nF("inv.me.n", me.n)}</label><label class="mut">No. telefon ${nF("inv.me.ph", me.ph)}</label><label class="mut">Bank ${nF("inv.me.bk", me.bk)}</label><label class="mut">No. akaun ${nF("inv.me.ac", me.ac)}</label></div></details>` +
+  <details class="card frm" data-nd="me" ${nInvOpen.has("me") ? "open" : ""}><summary><b>👤 Maklumat saya (keluar atas invois)</b></summary><div class="g1" style="margin-top:8px"><label class="mut">Nama / syarikat ${nF("inv.me.n", me.n)}</label><label class="mut">No. telefon ${nF("inv.me.ph", me.ph)}</label><label class="mut">Bank ${nF("inv.me.bk", me.bk)}</label><label class="mut">No. akaun ${nF("inv.me.ac", me.ac)}</label><label class="mut">Nama pemegang akaun ${nF("inv.me.an", me.an)}</label><div class="mut">Ini lalai untuk semua invois. Boleh diubah pada setiap invois.</div></div></details>` +
     (L.length ? L.map(i => { const tt = nInvTot(i); return `<details class="card frm" data-nd="${i.id}" ${nInvOpen.has(i.id) ? "open" : ""}><summary><b>${esc(i.no)}</b> · ${esc(i.client || "tanpa nama")} · ${fmt(tt)} <span class="zb ${i.paid ? "ok" : "w"}">${i.paid ? "dibayar" : "belum"}</span></summary>
     <div class="g2" style="margin-top:8px"><label class="mut">Pelanggan ${nF(`inv.list.${i.id}.client`, i.client)}</label><label class="mut">Tarikh <input type="date" data-f="z_set" data-k="inv.list.${i.id}.date" value="${esc(i.date)}"></label></div>
+    <div class="mut" style="margin-top:8px"><b>🏦 Bayaran ke (keluar atas invois)</b></div><div class="g2"><label class="mut">Bank ${nF(`inv.list.${i.id}.bk`, nInvPay(i).bk, 'placeholder="cth Maybank"')}</label><label class="mut">No. akaun ${nF(`inv.list.${i.id}.ac`, nInvPay(i).ac, 'inputmode="numeric"')}</label></div><label class="mut">Nama pemegang akaun ${nF(`inv.list.${i.id}.an`, nInvPay(i).an)}</label>
     ${i.items.map(x => `<div class="r2"><input data-f="z_set" data-k="inv.list.${i.id}.items.${x.id}.d" value="${esc(x.d)}" placeholder="Butiran" style="flex:1;min-width:100px"><input type="number" inputmode="decimal" data-f="z_set" data-k="inv.list.${i.id}.items.${x.id}.q" value="${+x.q || ""}" style="width:54px;flex:none" placeholder="Qty"><input type="number" step="0.01" inputmode="decimal" data-f="z_set" data-k="inv.list.${i.id}.items.${x.id}.p" value="${+x.p || ""}" style="width:84px;flex:none" placeholder="RM"><button class="del" data-act="n_iidel" data-i="${i.id}" data-l="${x.id}">✕</button></div>`).join("")}
     <button data-act="n_iiadd" data-i="${i.id}">+ Item</button><div class="hr2"><b>Jumlah ${fmt(tt)}</b></div>
     <div class="hr2"><button class="pri" data-act="n_iview" data-i="${i.id}">📄 Lihat / PDF</button><button data-act="n_ipaid" data-i="${i.id}">${i.paid ? "Batal bayar" : "✅ Dah bayar"}</button><button class="del" data-act="n_del" data-k="inv.list" data-i="${i.id}">✕</button></div></details>`; }).join("") : nEmpty("Belum ada invois. Sesuai untuk kerja sampingan, freelance, jual barang 🧾")) +
     '<button class="pri" data-act="n_inew">+ Invois baru</button>';
 }
+const nInvPay = i => { const me = Z.inv.me || {}, g = k => (i[k] != null ? i[k] : (me[k] || "")); return { bk: g("bk"), ac: g("ac"), an: g("an") }; };
 const nInvGet = () => Z.inv.list.find(x => x.id === nInvCur);
 function nInvView(id) {
   nInvCur = id; const i = nInvGet(); if (!i) return; const me = Z.inv.me, old = nE("bajView"); if (old) old.remove();
@@ -2173,7 +2175,7 @@ function nInvView(id) {
   ov.innerHTML = `<div class="pdfbar"><button class="pri" data-act="n_ipdf">📲 Share PDF</button><button data-act="n_isave">💾 Simpan PDF</button><button data-act="z_bprint">🖨️ Cetak</button><button data-act="z_bclose">✕ Tutup</button><span class="mut zbm"></span></div>
   <div class="paper"><h2>INVOIS</h2><div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:12px"><div><b>${esc(me.n || "(isi nama anda)")}</b><br>${esc(me.ph)}</div><div style="text-align:right">No: <b>${esc(i.no)}</b><br>Tarikh: ${dFmt(i.date)}</div></div><div style="font-size:13px;margin-bottom:10px">Kepada: <b>${esc(i.client || "-")}</b></div>
   <table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e5e5e5"><th style="text-align:left;border:1px solid #999;padding:6px">Butiran</th><th style="border:1px solid #999;padding:6px;width:44px">Qty</th><th style="text-align:right;border:1px solid #999;padding:6px;width:80px">Harga</th><th style="text-align:right;border:1px solid #999;padding:6px;width:90px">Jumlah</th></tr>${i.items.map(x => `<tr><td style="border:1px solid #999;padding:6px;text-align:left">${esc(x.d)}</td><td style="border:1px solid #999;padding:6px;text-align:center">${+x.q || 0}</td><td style="border:1px solid #999;padding:6px;text-align:right">${p2(x.p)}</td><td style="border:1px solid #999;padding:6px;text-align:right">${p2((+x.q || 0) * (+x.p || 0))}</td></tr>`).join("")}<tr style="font-weight:700;background:#f3f3f3"><td colspan="3" style="border:1px solid #999;padding:6px;text-align:right">JUMLAH</td><td style="border:1px solid #999;padding:6px;text-align:right">RM ${p2(nInvTot(i))}</td></tr></table>
-  ${me.bk || me.ac ? `<p style="margin-top:14px;font-size:13px">Bayaran ke: <b>${esc(me.bk)}</b> ${esc(me.ac)}</p>` : ""}<p style="font-size:12px;color:#555">Terima kasih.</p></div>`;
+  ${(() => { const P = nInvPay(i); return P.bk || P.ac ? `<p style="margin-top:14px;font-size:13px">Bayaran ke: <b>${esc(P.bk)}</b> ${esc(P.ac)}${P.an ? "<br>Atas nama: " + esc(P.an) : ""}</p>` : ""; })()}<p style="font-size:12px;color:#555">Terima kasih.</p></div>`;
   document.body.appendChild(ov);
 }
 async function nInvFile() {
@@ -2186,7 +2188,7 @@ async function nInvFile() {
   row("Butiran", "Qty", "Harga", "Jumlah", true, true);
   i.items.forEach(x => { if (y > PGH - 120) { d.page(); y = PGM; } row(x.d || "", String(+x.q || 0), p2(x.p), p2((+x.q || 0) * (+x.p || 0)), false); });
   row("JUMLAH (RM)", "", "", p2(nInvTot(i)), true, true); y += 22;
-  if (me.bk || me.ac) { d.text(PGM, y, "Bayaran ke: " + (me.bk || "") + " " + (me.ac || ""), 10, true, "l"); y += 16; }
+  { const P = nInvPay(i); if (P.bk || P.ac) { d.text(PGM, y, "Bayaran ke: " + P.bk + " " + P.ac, 10, true, "l"); y += 16; if (P.an) { d.text(PGM, y, "Atas nama: " + P.an, 10, false, "l"); y += 16; } } }
   d.text(PGM, y, "Terima kasih.", 9, false, "l");
   return new File([d.build()], "Invois_" + i.no + ".pdf", { type: "application/pdf" });
 }
@@ -2325,19 +2327,19 @@ document.addEventListener("toggle", e => { const d = e.target; if (d.dataset && 
 /* ---------- Pilih tool yang nak dipaparkan ---------- */
 const NV = [["sewa","🏠"],["bil","💳"],["claim","🧾"],["kend","🚗"],["hut","🤝"],["bel","💸"],["lang","📺"],["baj","📊"],["sim","🎯"],["spl","🍽️"],["kal","🧮"],["inv","🧾"],["mny","⛽"],["war","🛡️"],["tkh","📅"],["nota","📝"],["ot","⏱️"],["inc","💵"]];
 const nOn = k => (Z.vis && Z.vis.on || []).includes(k);
-function nVisFix() { if (!Z.vis || !Array.isArray(Z.vis.on)) Z.vis = { on: ["sewa","bil","claim","kend","hut","bel","lang","baj"] }; }
+function nVisFix() { if (!Z.vis || !Array.isArray(Z.vis.on) || Z.vis.on.length < 3) Z.vis = { on: ["sewa","bil","claim","kend","hut","bel","lang","baj"] }; }
 const _zF2 = zFix; zFix = function () { _zF2(); nVisFix(); }; nVisFix();
 function nApplyVis() { nVisFix(); document.querySelectorAll("#home .tool[data-t],#navTools .tool[data-t]").forEach(b => { b.style.display = nOn(b.dataset.t) ? "" : "none"; }); const n = NV.filter(x => nOn(x[0])).length; const b = document.getElementById("addTools"); if (b) b.querySelector(".mut").textContent = n ? n + " tool dipaparkan, tekan untuk ubah" : "Pilih tool yang anda nak"; }
 function nToolSheet() {
-  nVisFix(); sheet(shHead("Pilih tool") + '<div class="mut" style="margin-bottom:10px">Tanda tool yang anda nak nampak di menu. Yang tak ditanda disorok, data tak hilang.</div>' + '<button data-act="v_qa" style="margin-bottom:10px">✏️ Ubah pintasan ＋ (butang tengah)</button>' + NV.map(x => `<label class="cbl card" style="margin:0 0 8px"><input type="checkbox" data-act="v_vis" data-t="${x[0]}" ${nOn(x[0]) ? "checked" : ""}><span class="big" style="margin:0 4px 0 0;font-size:22px;flex:none">${x[1]}</span><span><b>${esc(ttl(x[0]))}</b></span></label>`).join(""));
+  nVisFix(); sheet(shHead("Pilih tool") + '<div class="mut" style="margin-bottom:10px">Tanda tool yang anda nak nampak di menu. Yang tak ditanda disorok, data tak hilang. Sekurang-kurangnya 3 tool mesti dipilih.</div><div class="hr2" style="margin-bottom:10px"><button class="pri" data-act="v_visall" style="flex:1">✅ Tambah semua</button><button data-act="v_qa" style="flex:1">✏️ Pintasan ＋</button></div><div class="mut" id="visMsg" style="min-height:16px;margin-bottom:6px"></div>' + NV.map(x => `<label class="cbl card" style="margin:0 0 8px"><input type="checkbox" data-act="v_vis" data-t="${x[0]}" ${nOn(x[0]) ? "checked" : ""}><span class="big" style="margin:0 4px 0 0;font-size:22px;flex:none">${x[1]}</span><span><b>${esc(ttl(x[0]))}</b></span></label>`).join(""));
 }
 const _nAll2 = nAll; nAll = function () { _nAll2(); nApplyVis(); };
 const _ms = moreSheet; moreSheet = function () { _ms(); document.querySelectorAll('.rov [data-act="open"][data-t]').forEach(b => { if (!nOn(b.dataset.t)) b.remove(); }); const r = document.querySelector(".rov .rbox"); if (r) r.insertAdjacentHTML("beforeend", '<button data-act="v_tools" data-x="1" style="margin-top:6px">➕ Tambah / sorok tool</button>'); };
-document.addEventListener("click", e => { const t = e.target.closest("[data-act]"); if (!t) return; const a = t.dataset.act; if (a === "v_tools") { e.stopImmediatePropagation(); sfx("pop"); setTimeout(nToolSheet, 0); } else if (a === "v_vis") { e.stopImmediatePropagation(); nVisFix(); const k = t.dataset.t, i = Z.vis.on.indexOf(k); if (t.checked && i < 0) Z.vis.on.push(k); else if (!t.checked && i >= 0) Z.vis.on.splice(i, 1); zsave(); nApplyVis(); sfx("tick"); } }, true);
+document.addEventListener("click", e => { const t = e.target.closest("[data-act]"); if (!t) return; const a = t.dataset.act; if (a === "v_tools") { e.stopImmediatePropagation(); sfx("pop"); setTimeout(nToolSheet, 0); } else if (a === "v_visall") { e.stopImmediatePropagation(); nVisFix(); Z.vis.on = NV.map(x => x[0]); zsave(); nApplyVis(); sfx("pop"); document.querySelectorAll('input[data-act="v_vis"]').forEach(c => c.checked = true); const m = document.getElementById("visMsg"); if (m) { m.textContent = "Semua tool ditambah."; m.style.color = "var(--ok)"; } } else if (a === "v_vis") { e.stopImmediatePropagation(); nVisFix(); const k = t.dataset.t, i = Z.vis.on.indexOf(k), m = document.getElementById("visMsg"); if (!t.checked && i >= 0 && Z.vis.on.length <= 3) { t.checked = true; sfx("low"); if (m) { m.textContent = "Sekurang-kurangnya 3 tool mesti dipilih."; m.style.color = "var(--bad)"; } return; } if (m) m.textContent = ""; if (t.checked && i < 0) Z.vis.on.push(k); else if (!t.checked && i >= 0) Z.vis.on.splice(i, 1); zsave(); nApplyVis(); sfx("tick"); } }, true);
 
 /* ---------- Pintasan ＋ boleh diubah ---------- */
 const QL = { bel: ["💸", "Belanja"], hut: ["🤝", "Hutang"], claim: ["🧾", "Claim"], sewa: ["🏠", "Rumah"], bil: ["💳", "Bil"], kend: ["🚗", "Servis"], lang: ["📺", "Langgan"], baj: ["📊", "Bajet"], inc: ["💵", "Pendapatan"], sim: ["🎯", "Simpanan"], spl: ["🍽️", "Split"], kal: ["🧮", "Kira"], inv: ["🧾", "Invois"], mny: ["⛽", "Minyak"], war: ["🛡️", "Waranti"], tkh: ["📅", "Tarikh"], nota: ["📝", "Nota"], ot: ["⏱️", "OT/Cuti"] };
-function qaFix() { if (!Array.isArray(Z.qa) || Z.qa.length !== 3 || Z.qa.some(k => !QL[k])) Z.qa = ["hut", "bel", "claim"]; }
+function qaFix() { if (!Array.isArray(Z.qa) || Z.qa.length !== 3 || Z.qa.some(k => !QL[k])) Z.qa = ["bel", "claim", "inc"]; else if (Z.qa.join() === "hut,bel,claim" && !Z.qaSet) { Z.qa = ["bel", "claim", "inc"]; Z.qaSet = 1; } }
 const _zF3 = zFix; zFix = function () { _zF3(); qaFix(); }; qaFix();
 function qaItems() { qaFix(); const A = [142, 90, 38]; return Z.qa.map((k, i) => [k, QL[k][0], QL[k][1], A[i]]); }
 function qaGo(k) { if (k === "bel" || k === "hut" || k === "claim" || k === "inc") addSheet(k); else { sfx("tick"); location.hash = k; } }
@@ -2345,12 +2347,12 @@ function qaCfg() {
   qaFix(); const lab = ["Kiri", "Tengah", "Kanan"];
   sheet(shHead("Pintasan ＋") + '<div class="mut" style="margin-bottom:10px">Pilih apa yang keluar bila tekan atau seret butang ＋ di tengah.</div><div class="frm">' + Z.qa.map((k, i) => `<label class="mut" style="margin-bottom:10px">${lab[i]}<select data-qaslot="${i}">${Object.keys(QL).map(x => `<option value="${x}" ${x === k ? "selected" : ""}>${QL[x][0]} ${QL[x][1]}${["bel", "hut", "claim", "inc"].includes(x) ? " (tambah terus)" : " (buka tool)"}</option>`).join("")}</select></label>`).join("") + '</div><button data-act="v_qareset">Set semula</button>');
 }
-document.addEventListener("change", e => { const t = e.target; if (t.dataset && t.dataset.qaslot != null) { qaFix(); Z.qa[+t.dataset.qaslot] = t.value; zsave(); sfx("pop"); } }, true);
+document.addEventListener("change", e => { const t = e.target; if (t.dataset && t.dataset.qaslot != null) { qaFix(); Z.qa[+t.dataset.qaslot] = t.value; Z.qaSet = 1; zsave(); sfx("pop"); } }, true);
 document.addEventListener("click", e => {
   const q = e.target.closest("[data-qe]"); if (q) { e.stopPropagation(); e.preventDefault(); sfx("tick"); closeDial(); setTimeout(qaCfg, 150); return; }
   const t = e.target.closest("[data-act]"); if (!t) return;
   if (t.dataset.act === "v_qa") { e.stopImmediatePropagation(); sfx("tick"); setTimeout(qaCfg, 0); }
-  else if (t.dataset.act === "v_qareset") { e.stopImmediatePropagation(); Z.qa = ["hut", "bel", "claim"]; zsave(); sfx("pop"); document.querySelectorAll("[data-qaslot]").forEach((x, i) => x.value = Z.qa[i]); }
+  else if (t.dataset.act === "v_qareset") { e.stopImmediatePropagation(); Z.qa = ["bel", "claim", "inc"]; zsave(); sfx("pop"); document.querySelectorAll("[data-qaslot]").forEach((x, i) => x.value = Z.qa[i]); }
 }, true);
 nApplyVis();
 try { zRender(); } catch (e) { console.error(e); }
@@ -3311,7 +3313,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111453",NOTES=[{"v":"2026111453","t":"Hari ni lebih kemas","l":["Hari ni hanya tunjuk bahagian yang ada isi: peringatan, bil belum bayar, hutang nak kutip dan baki bajet","Kalau semua kosong, keluar mesej 'Semua beres hari ni'"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111455",NOTES=[{"v":"2026111455","t":"Pilih tool & pintasan ＋","l":["Pilih tool: ada butang Tambah semua, dan mesti pilih sekurang-kurangnya 3 tool","Butang ＋ kini lalai: Belanja harian, Claim dan Pendapatan"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
