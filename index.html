@@ -356,6 +356,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-f
 #qaDial.open .qdi{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1)}
 #qaDial .qdedit.hot{transform:scale(1.25);box-shadow:0 0 0 3px var(--ac)}#qaDial .qdi:active{filter:brightness(.92)}#qaDial .qdi.hot{transform:translate(var(--dx),var(--dy)) scale(1.18);box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 0 3px var(--ac)}#nav .navadd{touch-action:none}
 #qaDial .qdedit{position:absolute;z-index:61;width:48px;height:48px;min-height:0;padding:0;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#0f172a;font-size:18px;line-height:1;opacity:0;transition:opacity .3s .25s}#qaDial.open .qdedit{opacity:1}
+#nav .navadd.cx{background:linear-gradient(145deg,#f87171,#b91c1c)!important;transform:scale(1.08)}#nav .navadd.cx b{transform:rotate(45deg)}
 #qaDial .qdi i{font-style:normal;font-size:34px;line-height:1}
 #qaDial .qdi span{font-size:13px;font-weight:700}
 #nav .navadd b{transition:transform .3s cubic-bezier(.2,.9,.3,1.3)}
@@ -600,12 +601,13 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") closeDial();
 (function () {
   let st = null, swallow = false;
   const hot = (x, y) => { let best = null, bd = 62; document.querySelectorAll("#qaDial .qdi,#qaDial .qdedit").forEach(b => { const d = Math.hypot(x - +b.dataset.tx, y - +b.dataset.ty); const on = d < (b.dataset.qe ? 46 : 62) && d < bd; if (on) { bd = d; best = b; } b.classList.remove("hot"); }); if (best) best.classList.add("hot"); return best; };
+  const onPlus = (x, y) => { const b = document.querySelector("#nav .navadd"); if (!b) return false; const r = b.getBoundingClientRect(), pad = 8; return x >= r.left - pad && x <= r.right + pad && y >= r.top - pad && y <= r.bottom + pad; };
   document.addEventListener("pointerdown", e => { const b = e.target.closest && e.target.closest("#nav .navadd"); if (!b) return; st = { x: e.clientX, y: e.clientY, drag: false, id: e.pointerId }; }, true);
   document.addEventListener("pointermove", e => {
     if (!st || e.pointerId !== st.id) return;
     const dy = e.clientY - st.y, dx = e.clientX - st.x;
     if (!st.drag && dy < -14 && Math.abs(dy) > Math.abs(dx) * .6) { st.drag = true; if (!document.getElementById("qaDial")) { sfx("tick"); toggleDial(); } }
-    if (st.drag) hot(e.clientX, e.clientY);
+    if (st.drag) { const h = hot(e.clientX, e.clientY), op = !h && onPlus(e.clientX, e.clientY), b = document.querySelector("#nav .navadd"); if (b) b.classList.toggle("cx", op); }
   }, true);
   const end = e => {
     if (!st || e.pointerId !== st.id) return;
@@ -613,7 +615,8 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") closeDial();
     if (!was.drag) return;
     swallow = true; setTimeout(() => { swallow = false; }, 400);
     if (e.type === "pointercancel") return;
-    const it = hot(e.clientX, e.clientY);
+    const it = hot(e.clientX, e.clientY), pb = document.querySelector("#nav .navadd"); if (pb) pb.classList.remove("cx");
+    if (!it && onPlus(e.clientX, e.clientY)) { sfx("low"); closeDial(); return; }
     if (it) { sfx("tick"); const k = it.dataset.qd; closeDial(); setTimeout(() => (it.dataset.qe ? qaCfg() : qaGo(k)), 120); }
   };
   document.addEventListener("pointerup", end, true); document.addEventListener("pointercancel", end, true);
@@ -3311,7 +3314,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111456",NOTES=[{"v":"2026111456","t":"Tambah cepat lebih mesra","l":["Lepas catat belanja, hutang, claim atau pendapatan, pop up terus tutup dan keluar pengesahan ringkas","Butang ＋ dan pilihan pintasan (bila tekan atau seret) lebih besar, senang nampak dan tekan"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111457",NOTES=[{"v":"2026111457","t":"Batal pilihan ＋","l":["Semasa seret butang ＋, lepaskan balik di ＋ untuk batal tanpa pilih apa-apa (butang bertukar merah)"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
