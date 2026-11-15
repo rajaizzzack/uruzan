@@ -2865,11 +2865,48 @@ try { zRender(); } catch (e) { console.error(e); }
   function inject() {
     const box = document.querySelector("#rzPanel .rzbox.pn"); if (!box || box.querySelector(".rzfont")) return;
     const a = box.querySelector(".rzsnd") || box.querySelector(".phero"); if (!a) return; const cur = get();
-    a.insertAdjacentHTML("afterend", `<div class="card rzfont" style="margin:10px 0"><b>Fon</b><div class="mut" style="margin-bottom:8px">Pilih gaya tulisan yang selesa dibaca</div><div class="chips" style="display:flex;flex-wrap:wrap;gap:8px">${F.map(f => `<button data-rzf="${f[0]}" class="${f[0] === cur ? "pri" : ""}" data-notr="1" style="font-family:${fam(f[0])}!important">${f[1]}</button>`).join("")}</div></div>`);
+    const nm = () => (F.find(x => x[0] === get()) || F[0])[1];
+    a.insertAdjacentHTML("afterend", `<details class="acc rzfont" style="margin:10px 0"><summary>🔤 Fon <span class="cnt" id="rzFn" data-notr="1" style="font-weight:600">${nm()}</span></summary><div class="accb" style="display:flex;flex-direction:column;gap:6px">${F.map(f => `<button data-rzf="${f[0]}" data-notr="1" style="display:flex;justify-content:space-between;align-items:center;text-align:left;font-family:${fam(f[0])}!important"><span>${f[1]}</span><b class="rzck" style="color:var(--ac)">${f[0] === get() ? "✓" : ""}</b></button>`).join("")}</div></details>`);
     if (cur === "sys") loadAll(); else loadAll();
   }
   let q = 0; new MutationObserver(() => { if (q) return; q = requestAnimationFrame(() => { q = 0; inject(); }); }).observe(document.body, { childList: true, subtree: true });
-  document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-rzf]"); if (!b) return; e.stopImmediatePropagation(); const id = b.dataset.rzf; try { localStorage.setItem("rz_font", id); } catch (er) {} apply(id); document.querySelectorAll("[data-rzf]").forEach(x => x.classList.toggle("pri", x === b)); sfx("tick"); }, true);
+  document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-rzf]"); if (!b) return; e.stopImmediatePropagation(); const id = b.dataset.rzf; try { localStorage.setItem("rz_font", id); } catch (er) {} apply(id); document.querySelectorAll("[data-rzf]").forEach(x => { const c = x.querySelector(".rzck"); if (c) c.textContent = x === b ? "✓" : ""; }); const fn = document.getElementById("rzFn"); if (fn) fn.textContent = b.querySelector("span").textContent; const dt = b.closest("details"); if (dt) dt.open = false; sfx("tick"); }, true);
+})();
+</script>
+<script type="text/rz-app">
+/* ---------- Cantik & mesra: tema visual ---------- */
+(function () {
+  if (document.getElementById("rzPolish")) return;
+  const st = document.createElement("style"); st.id = "rzPolish";
+  st.textContent = `
+/* ikon tool dalam jubin berwarna lembut */
+#home .grid .tool.card{border-radius:20px;padding:16px 14px;border:1px solid var(--bd);box-shadow:0 1px 2px rgba(16,24,40,.04),0 8px 20px -10px rgba(16,24,40,.14);position:relative;overflow:hidden}
+#home .grid .tool.card .big{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;font-size:25px!important;margin:0 0 10px!important;background:var(--tb,var(--in));box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+#home .grid .tool.card b{font-size:15.5px;letter-spacing:-.005em}
+#home .grid .tool.card::after{content:"›";position:absolute;right:12px;top:12px;font-size:20px;font-weight:700;color:var(--mut);opacity:.45;transition:transform .2s,opacity .2s}
+#home .grid .tool.card:hover::after{transform:translateX(3px);opacity:.9}
+[data-t=sewa]{--tb:rgba(245,158,11,.18)}[data-t=bil]{--tb:rgba(239,68,68,.15)}[data-t=claim]{--tb:rgba(59,130,246,.16)}[data-t=kend]{--tb:rgba(14,165,233,.16)}[data-t=hut]{--tb:rgba(168,85,247,.16)}[data-t=bel]{--tb:rgba(16,185,129,.17)}[data-t=lang]{--tb:rgba(236,72,153,.15)}[data-t=baj]{--tb:rgba(20,184,166,.17)}[data-t=sim]{--tb:rgba(234,179,8,.18)}[data-t=spl]{--tb:rgba(249,115,22,.16)}[data-t=kal]{--tb:rgba(99,102,241,.16)}[data-t=inv]{--tb:rgba(59,130,246,.16)}[data-t=mny]{--tb:rgba(239,68,68,.15)}[data-t=war]{--tb:rgba(34,197,94,.16)}[data-t=tkh]{--tb:rgba(236,72,153,.15)}[data-t=nota]{--tb:rgba(234,179,8,.18)}[data-t=ot]{--tb:rgba(14,165,233,.16)}[data-t=inc]{--tb:rgba(16,185,129,.17)}
+/* kad umum: lebih lembut */
+.card{border-radius:18px}
+.tdc{background:linear-gradient(160deg,rgba(45,212,191,.12),rgba(45,212,191,0) 55%),var(--card);border-color:rgba(45,212,191,.28)}
+/* butang utama: kecerunan halus */
+button.pri{background:linear-gradient(145deg,#14b8a6,#0f766e);color:#fff;border:0;box-shadow:0 6px 14px -6px rgba(15,118,110,.55)}
+button.pri:active{transform:scale(.97)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.pri{color:#fff}}
+/* tajuk bahagian */
+#home h3,.rov h3{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--mut);margin:18px 2px 8px}
+/* pop up: sudut lebih bulat, bayang lembut */
+.rov .rbox,.rov .rzbox{border-radius:26px 26px 0 0}
+@media(min-width:900px){.rov .rbox,.rov .rzbox{border-radius:22px}}
+/* input: fokus jelas */
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac)!important;box-shadow:0 0 0 3px rgba(20,184,166,.25)}
+/* baris senarai: tekan terasa */
+.hrow[data-act]:active,.tdl:active{background:var(--in)}
+/* bar nav bawah: kaca */
+#nav{backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px)}
+@media (prefers-reduced-motion:reduce){#home .grid .tool.card::after{transition:none}}
+`;
+  document.head.appendChild(st);
 })();
 </script>
 <script>
@@ -3441,7 +3478,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111462",NOTES=[{"v":"2026111462","t":"Fon baru yang lebih mesra","l":["Fon lalai kini Nunito (bulat dan mesra), boleh tukar di Profil: Nunito, Plus Jakarta Sans, Poppins, Inter, DM Sans atau fon sistem","Fon dimuat dari internet, kalau tiada internet guna fon sistem"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111464",NOTES=[{"v":"2026111464","t":"Rupa lebih cantik","l":["Ikon tool dalam jubin berwarna lembut, kad lebih bulat dengan bayang halus","Butang utama dan kad Hari ni lebih menarik, fokus input lebih jelas"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
