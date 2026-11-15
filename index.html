@@ -2979,7 +2979,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac)!impo
 @keyframes inrip{0%{opacity:.7;transform:scale(.6)}100%{opacity:0;transform:scale(1.5)}}
 @media(prefers-reduced-motion:reduce){.intro *{animation:none!important}}
 </style>
-<style id="rzPgCss">.rov.pg .phd>button[data-x],.rov.pg .phd>button[data-z="x"]{display:none}.rov.pg>.rbox,.rov.pg>.rzbox{overscroll-behavior:none;touch-action:pan-y}</style>
+<style id="rzPgCss">.rov.pg .phd>button[data-x],.rov.pg .phd>button[data-z="x"]{display:none}
+@media(max-width:899px){
+.rov.pg,#rzPanel.pg{overflow-y:auto!important;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:none;pointer-events:auto!important;display:block!important;touch-action:pan-y}
+.rov.pg>.rbox,.rov.pg>.rzbox{height:auto!important;min-height:100%;max-height:none!important;overflow:visible!important;margin:0 auto;touch-action:pan-y!important;overscroll-behavior:auto!important;padding-bottom:calc(130px + env(safe-area-inset-bottom,0px))!important}
+.rov.pg .phd{top:0;padding-top:calc(14px + env(safe-area-inset-top,0px))}
+}
+@media(min-width:900px){.rov.pg>.rbox,.rov.pg>.rzbox{overscroll-behavior:none;touch-action:pan-y}}
+</style>
 <style id="rzDialFx">
 #nav .navadd.prs{transform:scale(.88)!important;transition:transform .12s ease!important}
 body.dial-open #nav .navadd{animation:plusRing .55s ease-out}
@@ -3576,7 +3583,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111476",NOTES=[{"v": "2026111476", "t": "Bunyi dan animasi butang ＋", "l": ["Tekan atau leret ＋ ada bunyi dan animasi: ＋ mengecil bila ditekan dan berdenyut bila dibuka", "Leret melepasi Belanja, Claim, Pendapatan bunyi nota berbeza dan ikon bergoyang", "Lepas pilih ada bunyi dan kesan denyut sebelum pop-up dibuka"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111477",NOTES=[{"v": "2026111477", "t": "Hari ni dan Profil leret biasa", "l": ["Hari ni dan Profil boleh dileret di mana-mana bahagian skrin, lebih lancar macam Menu dan Total Bulanan"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
