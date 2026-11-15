@@ -280,8 +280,8 @@ body:has(#home[hidden]) .lobtn{display:none}.lobtn{margin-left:6px}
 @media (max-width:400px){.brand{letter-spacing:.1em;font-size:19px}.myf{width:26px;height:13px}#appT .brand~.pen{width:22px}.lobtn{padding:0 10px 0 8px;font-size:12px}}body.rz-locked .lobtn{display:none}
 </style>
 <style>
-#nav .navadd{flex:none;width:62px;height:62px;min-height:0;margin:-24px 2px 0;padding:0;border-radius:50%;background:linear-gradient(145deg,#2dd4bf,#0f766e);color:#fff;box-shadow:0 8px 20px rgba(15,118,110,.45);align-self:flex-start;transition:transform .15s}
-#nav .navadd b{font-size:34px;font-weight:300;filter:none;color:#fff;transform:none;line-height:1}
+#nav .navadd{flex:none;width:76px;height:76px;min-height:0;margin:-32px 2px 0;padding:0;border-radius:50%;background:linear-gradient(145deg,#2dd4bf,#0f766e);color:#fff;box-shadow:0 8px 20px rgba(15,118,110,.45);align-self:flex-start;transition:transform .15s}
+#nav .navadd b{font-size:44px;font-weight:300;filter:none;color:#fff;transform:none;line-height:1}
 #nav .navadd:active{transform:scale(.9)}
 .rbox.qa input[type=text],.rbox.qa input[type=number],.rbox.qa select{width:100%;text-align:left;font-weight:400;letter-spacing:0;margin:0}
 .qtabs{display:flex;gap:6px;margin:0 0 12px}.qtabs button{flex:1;min-height:42px;border-radius:12px;font-size:14px}.qtabs button.on{background:var(--ac);color:var(--bg);font-weight:700}
@@ -352,12 +352,12 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-f
 </style><style>
 #qaDial{position:fixed;inset:0;z-index:59;background:rgba(10,15,20,0);transition:background .25s;-webkit-tap-highlight-color:transparent}
 #qaDial.open{background:rgba(10,15,20,.45)}
-#qaDial .qdi{position:absolute;z-index:61;width:68px;height:68px;min-height:0;padding:0;border-radius:50%;border:0;background:var(--card);color:var(--tx);box-shadow:0 10px 26px rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;opacity:0;transform:translate(0,0) scale(.2);transition:transform .38s cubic-bezier(.2,.9,.3,1.35) var(--dl),opacity .2s var(--dl)}
+#qaDial .qdi{position:absolute;z-index:61;width:88px;height:88px;min-height:0;padding:0;border-radius:50%;border:0;background:var(--card);color:var(--tx);box-shadow:0 10px 26px rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;opacity:0;transform:translate(0,0) scale(.2);transition:transform .38s cubic-bezier(.2,.9,.3,1.35) var(--dl),opacity .2s var(--dl)}
 #qaDial.open .qdi{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1)}
 #qaDial .qdedit.hot{transform:scale(1.25);box-shadow:0 0 0 3px var(--ac)}#qaDial .qdi:active{filter:brightness(.92)}#qaDial .qdi.hot{transform:translate(var(--dx),var(--dy)) scale(1.18);box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 0 3px var(--ac)}#nav .navadd{touch-action:none}
-#qaDial .qdedit{position:absolute;z-index:61;width:40px;height:40px;min-height:0;padding:0;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#0f172a;font-size:18px;line-height:1;opacity:0;transition:opacity .3s .25s}#qaDial.open .qdedit{opacity:1}
-#qaDial .qdi i{font-style:normal;font-size:24px;line-height:1}
-#qaDial .qdi span{font-size:11px;font-weight:700}
+#qaDial .qdedit{position:absolute;z-index:61;width:48px;height:48px;min-height:0;padding:0;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#0f172a;font-size:18px;line-height:1;opacity:0;transition:opacity .3s .25s}#qaDial.open .qdedit{opacity:1}
+#qaDial .qdi i{font-style:normal;font-size:34px;line-height:1}
+#qaDial .qdi span{font-size:13px;font-weight:700}
 #nav .navadd b{transition:transform .3s cubic-bezier(.2,.9,.3,1.3)}
 body.dial-open #nav .navadd b{transform:rotate(45deg)}
 @media(prefers-reduced-motion:reduce){#qaDial .qdi{transition:opacity .1s}}
@@ -586,20 +586,20 @@ function closeDial() {
 function toggleDial() {
   if (document.getElementById("qaDial")) return closeDial();
   const btn = document.querySelector("#nav .navadd"); if (!btn) return addSheet("bel");
-  const r = btn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, R = 104;
+  const r = btn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, R = 128;
   const d = document.createElement("div"); d.id = "qaDial"; d.setAttribute("role", "menu");
   const items = qaItems();
-  d.innerHTML = items.map((it, i) => { const pc = innerWidth >= 900, ang = it[3] * Math.PI / 180, dx = pc ? 150 : Math.round(R * Math.cos(ang)), dy = pc ? i * 84 : Math.round(-R * Math.sin(ang) - (i === 1 ? 6 : 0));
-    return `<button class="qdi" role="menuitem" data-qd="${it[0]}" style="left:${Math.round(cx - 34)}px;top:${Math.round(cy - 34)}px;--dx:${dx}px;--dy:${dy}px;--dl:${i * 55}ms" data-tx="${Math.round(cx + dx)}" data-ty="${Math.round(cy + dy)}"><i>${it[1]}</i><span>${it[2]}</span></button>`; }).join("");
+  d.innerHTML = items.map((it, i) => { const pc = innerWidth >= 900, ang = it[3] * Math.PI / 180, dx = pc ? 150 : Math.round(R * Math.cos(ang)), dy = pc ? i * 100 : Math.round(-R * Math.sin(ang) - (i === 1 ? 6 : 0));
+    return `<button class="qdi" role="menuitem" data-qd="${it[0]}" style="left:${Math.round(cx - 44)}px;top:${Math.round(cy - 44)}px;--dx:${dx}px;--dy:${dy}px;--dl:${i * 55}ms" data-tx="${Math.round(cx + dx)}" data-ty="${Math.round(cy + dy)}"><i>${it[1]}</i><span>${it[2]}</span></button>`; }).join("");
   d.addEventListener("click", e => { const b = e.target.closest("[data-qd]"); sfx("tick"); closeDial(); if (b) setTimeout(() => qaGo(b.dataset.qd), 120); });
-  d.insertAdjacentHTML("beforeend", `<button class="qdedit" data-qe="1" data-tx="${Math.round(cx + (innerWidth >= 900 ? 150 : 0))}" data-ty="${innerWidth >= 900 ? Math.round(cy + 168 + 66 + 20) : Math.round(cy - (R + 98) + 20)}" aria-label="Ubah pintasan" title="Ubah pintasan" style="left:${Math.round(cx + (innerWidth >= 900 ? 150 : 0) - 20)}px;top:${Math.round(innerWidth >= 900 ? cy + 168 + 66 : cy - (R + 98))}px">✏️</button>`);
+  d.insertAdjacentHTML("beforeend", `<button class="qdedit" data-qe="1" data-tx="${Math.round(cx + (innerWidth >= 900 ? 150 : 0))}" data-ty="${innerWidth >= 900 ? Math.round(cy + 200 + 74 + 24) : Math.round(cy - (R + 112) + 24)}" aria-label="Ubah pintasan" title="Ubah pintasan" style="left:${Math.round(cx + (innerWidth >= 900 ? 150 : 0) - 24)}px;top:${Math.round(innerWidth >= 900 ? cy + 200 + 74 : cy - (R + 112))}px">✏️</button>`);
   document.body.appendChild(d); document.body.classList.add("dial-open");
   requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add("open")));
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDial(); });
 (function () {
   let st = null, swallow = false;
-  const hot = (x, y) => { let best = null, bd = 52; document.querySelectorAll("#qaDial .qdi,#qaDial .qdedit").forEach(b => { const d = Math.hypot(x - +b.dataset.tx, y - +b.dataset.ty); const on = d < (b.dataset.qe ? 40 : 52) && d < bd; if (on) { bd = d; best = b; } b.classList.remove("hot"); }); if (best) best.classList.add("hot"); return best; };
+  const hot = (x, y) => { let best = null, bd = 62; document.querySelectorAll("#qaDial .qdi,#qaDial .qdedit").forEach(b => { const d = Math.hypot(x - +b.dataset.tx, y - +b.dataset.ty); const on = d < (b.dataset.qe ? 46 : 62) && d < bd; if (on) { bd = d; best = b; } b.classList.remove("hot"); }); if (best) best.classList.add("hot"); return best; };
   document.addEventListener("pointerdown", e => { const b = e.target.closest && e.target.closest("#nav .navadd"); if (!b) return; st = { x: e.clientX, y: e.clientY, drag: false, id: e.pointerId }; }, true);
   document.addEventListener("pointermove", e => {
     if (!st || e.pointerId !== st.id) return;
@@ -619,6 +619,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") closeDial();
   document.addEventListener("pointerup", end, true); document.addEventListener("pointercancel", end, true);
   document.addEventListener("click", e => { if (swallow && e.target.closest && e.target.closest("#nav .navadd")) { e.stopPropagation(); e.preventDefault(); swallow = false; } }, true);
 })();
+function rzToast(m) { const o = document.getElementById("rzToast"); if (o) o.remove(); const d = document.createElement("div"); d.id = "rzToast"; d.setAttribute("role", "status"); d.textContent = m; d.style.cssText = "position:fixed;left:50%;bottom:128px;white-space:nowrap;transform:translateX(-50%);z-index:2000;background:#0f766e;color:#fff;font-weight:700;font-size:16px;padding:13px 22px;border-radius:999px;box-shadow:0 10px 28px rgba(0,0,0,.3);max-width:86vw;text-align:center"; document.body.appendChild(d); setTimeout(() => { d.style.transition = "opacity .3s"; d.style.opacity = "0"; setTimeout(() => d.remove(), 320); }, 1700); }
 function addSheet(tab) {
   const old = document.getElementById("qaSheet"); let ov = old;
   if (!ov) { ov = sheet(""); ov.id = "qaSheet"; ov.firstElementChild.classList.add("qa"); }
@@ -665,17 +666,14 @@ function addSheet(tab) {
       const c = { id: uid(), ts: Date.now(), type: t.id, date, desc: v("qa_desc").trim(), amt, photos: ov._ph.slice() };
       if (isKm) Object.assign(c, { from: v("qa_from").trim(), to: v("qa_to").trim(), odoS: "", odoE: "", km: kmv, rate: C.set.rate });
       C.claims.push(c); c.photos.forEach(id => idbPut(id, PH[id])); ov._ph = []; ov._cd = date;
-      try { cRender(); } catch (er) {} sfx("pay");
-      const keep = ov._ct; addSheet("claim"); const el = document.getElementById("qaMsg"); if (el) { el.style.color = ""; el.textContent = "Claim dicatat ✅ " + fmt(amt); }
+      try { cRender(); } catch (er) {} sfx("pay"); ov.remove(); rzToast("Claim dicatat ✅ " + fmt(amt));
       return;
     }
     const amt = num(v("qa_amt")); if (amt <= 0) { msg(""); const el = document.getElementById("qa_amt"); if (el) { el.focus(); el.style.outline = "2px solid var(--bad)"; } return; }
     if (k === "bel") { const bd = v("qa_bd") || today(); ov._bd = bd; Z.bel.push({ id: uid(), ts: Date.now(), date: bd, cat: v("qa_cat"), amt, note: v("qa_note").trim() }); Z.sel.bm = bd.slice(0, 7); }
     if (k === "hut") { const n = v("qa_name").trim(); if (!n) { const el = document.getElementById("qa_name"); if (el) { el.focus(); el.style.outline = "2px solid var(--bad)"; } return; } Z.hut.push({ id: uid(), name: n, amt, paid: 0, note: v("qa_note").trim(), date: today(), ym: mShift(cm, +v("qa_mon") || 0) }); }
     if (k === "inc") { const idd = v("qa_bd") || today(); ov._bd = idd; zIncAdd({ d: idd, s: v("qa_src"), a: amt, m: v("qa_cm"), t: v("qa_ct"), f: v("qa_cf"), l: v("qa_cl"), v: v("qa_v"), n: v("qa_note") }); }
-    zsave(); zRender(); sfx("pay");
-    ["qa_amt", "qa_note", "qa_name", "qa_cost", "qa_cm", "qa_ct", "qa_cf", "qa_cl"].forEach(i => { const el = document.getElementById(i); if (el) { el.value = ""; el.style.outline = ""; } });
-    msg("Dicatat ✅ " + fmt(amt)); const a = document.getElementById("qa_amt"); if (a) a.focus();
+    zsave(); zRender(); sfx("pay"); ov._ph = []; ov.remove(); rzToast("Dicatat ✅ " + fmt(amt));
   });
 }
 function moreSheet() {
@@ -1951,7 +1949,7 @@ main{padding-bottom:110px}
 #nav::before{content:"RIZTOOLS";position:absolute;top:28px;left:24px;font:800 19px/1 system-ui,sans-serif;letter-spacing:.2em;background:linear-gradient(90deg,#14b8a6,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent}
 #nav>button:not(.navadd){flex:none!important;max-width:none!important;width:100%;flex-direction:row!important;justify-content:flex-start!important;gap:12px;min-height:46px;padding:0 14px!important;font-size:15px;border-radius:12px;text-align:left}
 #nav>button b{font-size:20px;margin:0}
-#nav .navadd{width:100%!important;height:48px!important;margin:0 0 14px!important;border-radius:14px!important;order:-1;flex-direction:row!important;justify-content:center!important;gap:8px;align-self:stretch}
+#nav .navadd{width:100%!important;height:56px!important;margin:0 0 14px!important;border-radius:14px!important;order:-1;flex-direction:row!important;justify-content:center!important;gap:8px;align-self:stretch}
 #nav .navadd b{font-size:26px!important;line-height:1}
 #nav .navadd::after{content:"Tambah";font:700 15px system-ui,sans-serif;color:#fff}
 #nav button b{animation:none!important}
@@ -3313,7 +3311,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111455",NOTES=[{"v":"2026111455","t":"Pilih tool & pintasan ＋","l":["Pilih tool: ada butang Tambah semua, dan mesti pilih sekurang-kurangnya 3 tool","Butang ＋ kini lalai: Belanja harian, Claim dan Pendapatan"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111456",NOTES=[{"v":"2026111456","t":"Tambah cepat lebih mesra","l":["Lepas catat belanja, hutang, claim atau pendapatan, pop up terus tutup dan keluar pengesahan ringkas","Butang ＋ dan pilihan pintasan (bila tekan atau seret) lebih besar, senang nampak dan tekan"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
