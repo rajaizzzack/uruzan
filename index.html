@@ -2875,106 +2875,6 @@ try { zRender(); } catch (e) { console.error(e); }
 })();
 </script>
 <script type="text/rz-app">
-/* ---------- Backup Google Drive (Profil) ---------- */
-(function () {
-  if (window.__rzGd) return; window.__rzGd = 1;
-  const SCOPE = "https://www.googleapis.com/auth/drive.appdata", FN = "uruzan-backup.json", LK = "rz_gd_last", CK = "rz_gcid";
-  let tok = null, tokExp = 0, tc = null, busy = false;
-  const ls = (k, v) => { try { if (v === undefined) return localStorage.getItem(k) || ""; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return ""; };
-  const msg = (t, ok) => { const m = document.getElementById("rzGdMsg"); if (m) { m.textContent = t; m.style.color = ok ? "var(--ok)" : ""; } };
-  function info() {
-    const el = document.getElementById("rzGdInfo"), st = document.getElementById("rzGdSt"); const t = ls(LK);
-    if (el) el.textContent = t ? "Backup Drive terakhir: " + new Date(t).toLocaleString("ms-MY") : "Belum pernah backup ke Drive.";
-    if (st) st.textContent = tok && Date.now() < tokExp ? "Dah log masuk" : (ls(CK) ? "Belum log masuk" : "Belum disediakan");
-    const lo = document.getElementById("rzGdIn"); if (lo) lo.textContent = tok && Date.now() < tokExp ? "Log masuk semula" : "Log masuk Google";
-  }
-  function loadGsi() {
-    return new Promise((res, rej) => {
-      if (window.google && google.accounts && google.accounts.oauth2) return res();
-      let s = document.getElementById("rzGsi");
-      if (!s) { s = document.createElement("script"); s.id = "rzGsi"; s.src = "https://accounts.google.com/gsi/client"; s.async = true; document.head.appendChild(s); }
-      s.addEventListener("load", () => res()); s.addEventListener("error", () => rej(new Error("Tak dapat sambung ke Google. Semak internet.")));
-    });
-  }
-  async function login() {
-    const cid = ls(CK).trim(); if (!cid) throw new Error("Masukkan Client ID dulu.");
-    await loadGsi();
-    return new Promise((res, rej) => {
-      tc = google.accounts.oauth2.initTokenClient({
-        client_id: cid, scope: SCOPE,
-        callback: r => { if (r && r.access_token) { tok = r.access_token; tokExp = Date.now() + ((+r.expires_in || 3600) - 60) * 1000; info(); res(tok); } else rej(new Error((r && (r.error_description || r.error)) || "Log masuk gagal.")); },
-        error_callback: e => rej(new Error(e && e.type === "popup_closed" ? "Log masuk dibatalkan." : "Log masuk gagal: " + ((e && (e.message || e.type)) || "tak diketahui")))
-      });
-      tc.requestAccessToken({ prompt: tok ? "" : "consent" });
-    });
-  }
-  const ensure = () => tok && Date.now() < tokExp ? Promise.resolve(tok) : login();
-  async function api(url, opt) {
-    const r = await fetch(url, Object.assign({}, opt, { headers: Object.assign({ Authorization: "Bearer " + tok }, (opt && opt.headers) || {}) }));
-    if (r.status === 401) { tok = null; info(); throw new Error("Sesi tamat. Tekan Log masuk Google semula."); }
-    if (!r.ok) { let t = ""; try { t = (await r.json()).error.message; } catch (e) {} throw new Error("Drive: " + (t || r.status)); }
-    return r;
-  }
-  async function find() {
-    const q = encodeURIComponent("name='" + FN + "'");
-    const j = await (await api("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=" + q + "&fields=files(id,modifiedTime)&orderBy=modifiedTime desc")).json();
-    return (j.files || [])[0] || null;
-  }
-  async function up(auto) {
-    if (busy) return; busy = true;
-    try {
-      if (auto && !(tok && Date.now() < tokExp)) return; await ensure(); msg(auto ? "Backup automatik..." : "Menyediakan backup...");
-      const body = JSON.stringify(window.bkData()), f = await find();
-      if (f) await api("https://www.googleapis.com/upload/drive/v3/files/" + f.id + "?uploadType=media", { method: "PATCH", headers: { "Content-Type": "application/json" }, body });
-      else {
-        const bd = "rzb" + Date.now(), meta = JSON.stringify({ name: FN, parents: ["appDataFolder"], mimeType: "application/json" });
-        await api("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", { method: "POST", headers: { "Content-Type": "multipart/related; boundary=" + bd }, body: "--" + bd + "\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n" + meta + "\r\n--" + bd + "\r\nContent-Type: application/json\r\n\r\n" + body + "\r\n--" + bd + "--" });
-      }
-      ls(LK, new Date().toISOString()); sig = sigNow(); info(); if (!auto) try { sfx("chime"); } catch (e) {}
-      const kb = Math.max(1, Math.round(body.length / 1024)); msg((auto ? "Backup automatik siap ✅ (" : "Backup ke Drive siap ✅ (") + (kb > 1024 ? (kb / 1024).toFixed(1) + " MB" : kb + " KB") + ")", true);
-    } catch (e) { msg(e.message || "Backup gagal."); } finally { busy = false; }
-  }
-  const sigNow = () => { try { return JSON.stringify([S, H, C, Z, TT, APPN]).length + ":" + Object.keys(PH).length + ":" + (function (t) { let h = 0; for (let i = 0; i < t.length; i += 7) h = (h * 31 + t.charCodeAt(i)) | 0; return h; })(JSON.stringify([S, H, C, Z])); } catch (e) { return ""; } };
-  let sig = ""; const autoOn = () => ls("rz_gd_auto") === "1";
-  setInterval(() => { if (!autoOn() || busy || !(tok && Date.now() < tokExp)) return; const n = sigNow(); if (sig === "") { sig = n; return; } if (n !== sig) up(true); }, 45000);
-  setTimeout(() => { if (!autoOn()) return; const t = ls(LK); if (ls(CK) && (!t || Date.now() - new Date(t).getTime() > 3 * 864e5) && window.rzToast) rzToast("☁️ Dah lama tak backup ke Drive. Buka Profil dan log masuk."); }, 6000);
-  async function down() {
-    if (busy) return; busy = true;
-    try {
-      await ensure(); msg("Mencari backup di Drive...");
-      const f = await find(); if (!f) { msg("Tiada backup di Drive lagi. Buat backup dulu."); return; }
-      const d = await (await api("https://www.googleapis.com/drive/v3/files/" + f.id + "?alt=media")).json();
-      if (!d || d.app !== "riztool" || !d.sewa || !d.bil || !d.claim) throw new Error("Fail backup di Drive tak sah.");
-      if (!confirm("Pulihkan akan GANTI semua data sekarang dengan backup Drive bertarikh " + new Date(f.modifiedTime).toLocaleString("ms-MY") + ". Teruskan?")) { msg("Dibatalkan."); return; }
-      const m = { set textContent(v) { msg(v, /✅/.test(v)); } }; bkApply(d, m);
-    } catch (e) { msg(e.message || "Pulihkan gagal."); } finally { busy = false; }
-  }
-  function inject() {
-    const box = document.querySelector("#rzPanel .rzbox.pn"); if (!box || box.querySelector(".rzgd")) return;
-    const a = box.querySelector(".rzfont") || box.querySelector(".rzsnd") || box.querySelector(".phero"); if (!a) return;
-    a.insertAdjacentHTML("afterend", `<details class="acc rzgd" style="margin:10px 0"><summary>☁️ Backup Google Drive <span class="cnt" id="rzGdSt" data-notr="1" style="font-weight:600"></span></summary><div class="accb" style="display:flex;flex-direction:column;gap:8px">
-<div class="mut">Simpan backup dalam Drive Google kau sendiri (folder tersembunyi app, orang lain tak nampak).</div>
-<label class="mut" for="rzGdCid">Client ID Google</label><input id="rzGdCid" data-notr="1" placeholder="xxxx.apps.googleusercontent.com" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(ls(CK))}">
-<button data-rzgd="in" id="rzGdIn">Log masuk Google</button>
-<button data-rzgd="up">⬆️ Backup ke Drive</button>
-<button data-rzgd="down">⬇️ Pulihkan dari Drive</button>
-<label class="mut" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="rzGdAuto" ${ls("rz_gd_auto") === "1" ? "checked" : ""}><span>Backup automatik bila data berubah (selagi dah log masuk Google, lebih kurang sejam sekali perlu log masuk semula)</span></label>
-<div class="mut" id="rzGdInfo"></div><div class="mut" id="rzGdMsg" role="status"></div>
-<div class="mut" style="font-size:12px">Cara dapat Client ID: Google Cloud Console → buat projek → aktifkan Google Drive API → OAuth consent screen → Credentials → OAuth client ID (Web application) → letak alamat app ini dalam Authorized JavaScript origins.</div></div></details>`);
-    info();
-  }
-  let q = 0; new MutationObserver(() => { if (q) return; q = requestAnimationFrame(() => { q = 0; inject(); }); }).observe(document.body, { childList: true, subtree: true });
-  document.addEventListener("change", e => { if (e.target && e.target.id === "rzGdAuto") { ls("rz_gd_auto", e.target.checked ? "1" : null); sig = sigNow(); msg(e.target.checked ? "Backup automatik dihidupkan." : "Backup automatik dimatikan.", true); } if (e.target && e.target.id === "rzGdCid") { ls(CK, e.target.value.trim()); tok = null; info(); } });
-  document.addEventListener("click", async e => {
-    const b = e.target.closest && e.target.closest("[data-rzgd]"); if (!b) return; e.stopImmediatePropagation();
-    const ci = document.getElementById("rzGdCid"); if (ci) ls(CK, ci.value.trim());
-    const a = b.dataset.rzgd;
-    if (a === "in") { try { msg("Membuka log masuk Google..."); await login(); msg("Log masuk berjaya ✅", true); } catch (er) { msg(er.message); } }
-    else if (a === "up") up(); else if (a === "down") down();
-  }, true);
-})();
-</script>
-<script type="text/rz-app">
 /* ---------- Cantik & mesra: tema visual ---------- */
 (function () {
   if (document.getElementById("rzPolish")) return;
@@ -3316,8 +3216,6 @@ async function onClick(e) {
   if (z === "bk") return window.bkAct("bk_save");
   if (z === "bks") return window.bkAct("bk_share");
   if (z === "bkl") return window.bkAct("bk_load");
-  if (z === "gdsave") return window.gdSave && gdSave();
-  if (z === "gdload") return window.gdLoad && gdLoad();
   if (z === "rst") { $("rzPanel").remove(); return window.bkAct("bk_reset"); }
   if (z === "avU") return $("avF").click();
   if (z === "avf" || z === "avRnd") { const f = AVDR && AVDR.t === "fig" ? AVDR : (!AVDR && me.av && me.av.t === "fig" ? Object.assign({}, me.av) : Object.assign({ t: "fig" }, AVD));
@@ -3579,7 +3477,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111468",NOTES=[{"v": "2026111468", "t": "Backup Drive automatik + betulkan nama", "l": ["Backup ke Google Drive secara automatik bila data berubah (pilihan dalam Profil)", "Nama lama RIZTOOLS dalam backup tak lagi menggantikan nama Uruzan selepas pulihkan", "Kalau dah ada nama RIZTOOLS tersimpan, ia terus bertukar jadi Uruzan"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111469",NOTES=[{"v": "2026111469", "t": "Backup kembali ke simpanan local", "l": ["Pilihan backup Google Drive dibuang", "Backup dan pulihkan guna fail dalam peranti seperti dahulu", "Nama lama RIZTOOLS dalam backup tak lagi menggantikan nama Uruzan"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
@@ -3698,86 +3596,6 @@ document.addEventListener("click",function(e){var b=e.target.closest("#nav butto
 
 
 
-
-</script>
-<script>
-/* ===== GOOGLE DRIVE (backup ke Drive pengguna sendiri) ===== */
-(function(){
-"use strict";
-var CID="__GOOGLE_CLIENT_ID__",SCOPE="https://www.googleapis.com/auth/drive.appdata";
-var tok=null,tokExp=0,ready=false,loading=false;
-function on(){return CID&&CID.indexOf("__")!==0;}
-function msg(t,ok){var m=document.getElementById("bkMsg");if(m){m.textContent=t;m.style.color=ok?"var(--ok)":"";}}
-function load(){
-  if(!on()||ready||loading)return;loading=true;
-  var s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.async=true;
-  s.onload=function(){ready=true;};s.onerror=function(){loading=false;};document.head.appendChild(s);
-}
-if(on())setTimeout(load,2500);
-/* mesti dipanggil terus dari sentuhan pengguna supaya popup tak disekat */
-function token(){
-  return new Promise(function(res,rej){
-    if(tok&&Date.now()<tokExp)return res(tok);
-    if(!ready||!window.google||!google.accounts){load();return rej(new Error("belum-sedia"));}
-    var c=google.accounts.oauth2.initTokenClient({client_id:CID,scope:SCOPE,
-      callback:function(r){if(r.error)return rej(new Error(r.error));tok=r.access_token;tokExp=Date.now()+Math.max(60,(r.expires_in||3600)-60)*1000;res(tok);},
-      error_callback:function(e){rej(new Error((e&&e.type)||"ralat"));}});
-    c.requestAccessToken({prompt:""});
-  });
-}
-function fname(){return "riztools-"+(window.rzProfId?rzProfId():"root")+".json";}
-function api(url,opt){
-  opt=opt||{};opt.headers=Object.assign({Authorization:"Bearer "+tok},opt.headers||{});
-  return fetch(url,opt).then(function(r){if(!r.ok)throw new Error("http-"+r.status);return r;});
-}
-function find(){
-  var q=encodeURIComponent("name='"+fname()+"' and trashed=false");
-  return api("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&pageSize=1&orderBy=modifiedTime%20desc&fields=files(id,name,modifiedTime,size)&q="+q).then(function(r){return r.json();}).then(function(j){return (j.files||[])[0]||null;});
-}
-function fail(e){
-  var m=String(e&&e.message||e);
-  if(m==="belum-sedia")return msg("Google sedang disediakan. Cuba tekan sekali lagi.");
-  if(/popup_closed|access_denied/.test(m))return msg("Dibatalkan.");
-  if(/popup_failed|popup_blocked/.test(m))return msg("Popup disekat. Benarkan popup untuk laman ni, kemudian cuba lagi.");
-  msg("Google Drive gagal: "+m);
-}
-window.gdOn=on;
-window.gdSave=function(){
-  if(!on())return msg("Google Drive belum disediakan lagi.");
-  token().then(function(){
-    msg("Menyimpan ke Google Drive...");
-    return new Promise(function(r){setTimeout(r,30);}).then(function(){
-      var d=window.bkData?bkData():null;if(!d)throw new Error("tiada-data");
-      var body=JSON.stringify(d);
-      return find().then(function(f){
-        if(f)return api("https://www.googleapis.com/upload/drive/v3/files/"+f.id+"?uploadType=media",{method:"PATCH",headers:{"Content-Type":"application/json"},body:body});
-        var b="rzb"+Date.now(),meta=JSON.stringify({name:fname(),parents:["appDataFolder"],mimeType:"application/json"});
-        var mp="--"+b+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n"+meta+"\r\n--"+b+"\r\nContent-Type: application/json\r\n\r\n"+body+"\r\n--"+b+"--";
-        return api("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",{method:"POST",headers:{"Content-Type":"multipart/related; boundary="+b},body:mp});
-      }).then(function(){
-        try{localStorage.setItem("riztool_gdlast",new Date().toISOString());}catch(e){}
-        if(window.sfx)sfx("chime");msg("Dah disimpan di Google Drive anda ✅",true);
-      });
-    });
-  }).catch(fail);
-};
-window.gdLoad=function(){
-  if(!on())return msg("Google Drive belum disediakan lagi.");
-  token().then(function(){
-    msg("Mencari backup di Google Drive...");
-    return find().then(function(f){
-      if(!f){msg("Tiada backup di Google Drive anda lagi.");return;}
-      var dt=new Date(f.modifiedTime).toLocaleString("ms-MY");
-      if(!confirm("Pulihkan backup Google Drive ("+dt+")? Data sekarang akan DIGANTI."))return msg("Dibatalkan.");
-      msg("Memuat turun...");
-      return api("https://www.googleapis.com/drive/v3/files/"+f.id+"?alt=media").then(function(r){return r.json();}).then(function(d){
-        if(!d||d.app!=="riztool"||!d.sewa||!d.bil||!d.claim)throw new Error("fail-tak-sah");
-        bkApply(d);msg("Dipulihkan dari Google Drive ✅",true);
-      });
-    });
-  }).catch(fail);
-};
-})();
 
 </script>
 <script>
