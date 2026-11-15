@@ -571,12 +571,13 @@ function todaySheet() {
   const rem = R.map(r => row(r.tool, `<span class="zb ${r.days < 0 ? "bad" : r.days <= r.nb ? "w" : "ok"}">${r.d ? zlbl(r.days) : "Semak"}</span>`, esc(r.t))).join("") || '<div class="mut">Tiada yang dekat 👍</div>';
   const G = Z.syncH ? zHutG().map(g => { const L = g.L.filter(h => zRemain(h) > .004 && (h.ym || cm) <= cm); return { n: g.name, a: r2(L.reduce((x, h) => x + zRemain(h), 0)) }; }).filter(g => g.a > .004) : [];
   const hut = G.map(g => row("hut", '<span class="ic" style="background:var(--in)">🤝</span>', esc(g.n), `<b style="color:var(--ok)">${fmt(g.a)}</b>`)).join("") || '<div class="mut">Tiada hutang untuk dikutip bulan ni.</div>';
-  pgSheet(shHead("Hari ni") + `<div class="mut" style="margin-bottom:8px">${esc(dFmt(today()))}</div>
-    <div class="card tdy"><div class="sum"><div><div class="mut">Baki bajet</div><b class="owe ${c.inc > 0 && baki < 0 ? "b" : "z"}">${c.inc > 0 ? fmt(baki) : "-"}</b></div><div><div class="mut">Belanja bulan ni</div><b>${fmt(c.bel)}</b></div></div>
-    ${c.inc > 0 ? "" : '<div class="mut" style="margin-top:6px">Isi pendapatan di Bajet untuk nampak baki.</div>'}</div>
-    <h3>🔔 Peringatan</h3><div class="card">${rem}</div>
-    <h3>💳 Bil belum bayar${unpaid ? " · " + fmt(left) : ""}</h3><div class="card">${unpaid ? H.items.filter(i => !i.paid && (+i.amt || 0) > 0).map(i => row("bil", '<span class="ic" style="background:var(--in)">💳</span>', esc(i.name || "Bil") + (i.due ? `<div class="mut">Due ${esc(String(i.due))}</div>` : ""), `<b class="owe">${fmt(+i.amt || 0)}</b>`)).join("") : row("bil", '<span class="ic" style="background:var(--in)">💳</span>', "Semua dah bayar ✅", "")}</div>
-    <h3>🤝 Hutang member nak kutip</h3><div class="card">${hut}</div>`);
+  const bils = H.items.filter(i => !i.paid && (+i.amt || 0) > 0);
+  const secs = [];
+  if (c.inc > 0 || c.bel > 0) secs.push(`<div class="card tdy"><div class="sum"><div><div class="mut">Baki bajet</div><b class="owe ${c.inc > 0 && baki < 0 ? "b" : "z"}">${c.inc > 0 ? fmt(baki) : "-"}</b></div><div><div class="mut">Belanja bulan ni</div><b>${fmt(c.bel)}</b></div></div></div>`);
+  if (R.length) secs.push(`<h3>🔔 Peringatan</h3><div class="card">${rem}</div>`);
+  if (bils.length) secs.push(`<h3>💳 Bil belum bayar · ${fmt(left)}</h3><div class="card">${bils.map(i => row("bil", '<span class="ic" style="background:var(--in)">💳</span>', esc(i.name || "Bil") + (i.due ? `<div class="mut">Due ${esc(String(i.due))}</div>` : ""), `<b class="owe">${fmt(+i.amt || 0)}</b>`)).join("")}</div>`);
+  if (G.length) secs.push(`<h3>🤝 Hutang member nak kutip</h3><div class="card">${hut}</div>`);
+  pgSheet(shHead("Hari ni") + `<div class="mut" style="margin-bottom:8px">${esc(dFmt(today()))}</div>` + (secs.join("") || '<div class="card" style="text-align:center;padding:26px 14px"><div style="font-size:30px">✅</div><b>Semua beres hari ni</b><div class="mut">Tiada peringatan, bil atau hutang yang perlu diuruskan.</div></div>'));
 }
 function closeDial() {
   const d = document.getElementById("qaDial"); if (!d) return;
@@ -1691,7 +1692,7 @@ function zBajHead(c, y, mo) {
   const lab = { gaji: "💰 Gaji bersih", diberi: "💝 Duit belanja bulanan", own: "🛵 Pendapatan kerja sendiri" }[md] || "💰 Gaji bersih";
   let h = `<div class="chips" style="margin-bottom:10px">${chip("gaji", "Gaji tetap")}${chip("own", "Kerja sendiri")}${chip("diberi", "Suri rumah / diberi")}</div>`;
   if (md === "own") h += `<div class="g2 gj"><b>${lab}</b><b>${fmt(c.incLog)}</b></div><div class="hr2"><button data-act="open" data-t="inc">💵 Catat pendapatan</button></div><div class="mut">Dari rekod Pendapatan bulan ni (lepas tolak kos kerja).</div>`;
-  else { h += `<div class="g2 gj"><b>${lab}</b><input type="number" step="0.01" inputmode="decimal" data-f="z_set" data-k="baj.m.${y}.gaji" value="${mo.gaji || ""}" placeholder="RM"></div>`; if (c.incLog > 0) h += `<div class="mut">+ Pendapatan direkod ${fmt(c.incLog)}</div>`; }
+  else { h += `<div class="g2 gj"><b>${lab}</b><input type="number" step="0.01" inputmode="decimal" data-f="z_set" data-k="baj.m.${y}.gaji" value="${mo.gaji || ""}" placeholder="RM"></div>`; if (c.incLog > 0) h += `<div class="mut" data-act="open" data-t="inc" style="cursor:pointer">+ Pendapatan direkod ${fmt(c.incLog)} <b style="color:var(--ac)">›</b></div>`; }
   return h;
 }
 function zBajIncRows(r) { const md = Z.baj.mode || "gaji", a = []; if (md !== "own") a.push([md === "diberi" ? "Duit belanja bulanan" : "Gaji bersih", r.mo.gaji || 0, 1]); if (r.c.incLog > 0 || md === "own") a.push(["Pendapatan direkod", r.c.incLog, 1]); return a; }
@@ -2032,6 +2033,10 @@ body:has(#home:not([hidden])) .top{margin-bottom:8px}
 @media(max-width:480px){#tool-sewa .card{overflow-x:auto;-webkit-overflow-scrolling:touch}#tool-sewa table{border-spacing:2px}}
 @media(min-width:900px){#nav #navTools .tool.card.on{padding:5px 12px!important;font-weight:700;background:var(--in)!important;color:var(--ac)!important}#nav #navTools .tool.card.on b{font-weight:700!important}}
 .iedit{display:block;margin-top:4px;padding:2px 0;min-height:32px;background:none;color:var(--ac);font-size:12.5px;box-shadow:none;border:0}
+
+.rgo{flex:none;width:34px;height:34px;min-height:0;min-width:0;padding:0;border-radius:50%;font-size:20px;line-height:1;background:var(--in);color:var(--ac);box-shadow:none;border:0;transition:transform .15s,background-color .15s}
+.rgo:hover{transform:translateX(2px);background:color-mix(in srgb,var(--ac) 14%,var(--in))}.rgo:active{transform:scale(.92)}
+.kle{flex:none;width:34px;height:34px;min-height:0;min-width:0;padding:0;font-size:14px;background:transparent;box-shadow:none;opacity:.7}.kle:hover{opacity:1}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .pbar{height:10px;border-radius:6px;background:var(--in);overflow:hidden;margin:8px 0 2px}.pbar i{display:block;height:100%;background:var(--ac);border-radius:6px;transition:width .5s}
 .gbtn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:12px;background:var(--in);cursor:pointer;font-weight:600}
@@ -2207,7 +2212,7 @@ function nMny() {
   nE("zc-mny").innerHTML = `<div class="card frm"><label class="mut">Kenderaan <select data-f="z_set" data-k="fs.v">${Z.kv.map(v => `<option value="${v.id}" ${v.id === fs.v ? "selected" : ""}>${esc(v.name)}${v.plate ? " · " + esc(v.plate) : ""}</option>`).join("")}</select></label>
   <div class="sum"><div><div class="mut">Purata</div><b>${st.kmpl ? p2(st.kmpl) + " km/L" : "-"}</b></div><div><div class="mut">Kos sekilometer</div><b>${st.rmkm ? "RM" + (st.rmkm).toFixed(3) : "-"}</b></div><div><div class="mut">Belanja minyak bulan ni</div><b>${fmt(mo)}</b></div><div><div class="mut">Jumlah (kenderaan ni)</div><b>${fmt(all)}</b></div></div></div>
   <div class="card frm"><b>⛽ Isi minyak baru</b><div class="g2" style="margin-top:8px"><label class="mut">Tarikh ${nT("fs.date", "", "d")}</label><label class="mut">Odometer (km) ${nT("fs.odo", "cth 45210", "n", 'inputmode="numeric"')}</label></div><div class="g2"><label class="mut">Liter ${nT("fs.l", "cth 28.5", "n")}</label><label class="mut">Bayar (RM) ${nT("fs.amt", "cth 60", "n")}</label></div><button class="pri" data-act="n_fadd">+ Simpan</button><div class="mut" style="margin-top:6px">Isi tangki penuh setiap kali, supaya kiraan km/L tepat.</div></div>` +
-    (A.length ? A.slice(0, 12).map(f => `<div class="hrow"><span class="nm">${dFmt(f.date)}${f.odo ? " · " + f.odo + " km" : ""}<div class="mut">${+f.l > 0 ? p2(f.l) + "L · RM" + p2(f.amt / f.l) + "/L" : "dari pendapatan"}${st.by[f.id] ? " · " + p2(st.by[f.id]) + " km/L" : ""}</div></span><b>${fmt(f.amt)}</b><button class="del ghost" data-act="n_fdel" data-i="${f.id}">✕</button></div>`).join("") : nEmpty("Belum ada rekod minyak."));
+    (A.length ? A.slice(0, 12).map(f => `<div class="hrow"><span class="nm">${dFmt(f.date)}${f.odo ? " · " + f.odo + " km" : ""}<div class="mut">${+f.l > 0 ? p2(f.l) + "L · RM" + p2(f.amt / f.l) + "/L" : "dari pendapatan"}${st.by[f.id] ? " · " + p2(st.by[f.id]) + " km/L" : ""}</div></span><b>${fmt(f.amt)}</b><button class="ghost kle" data-act="v_kfedit" data-i="${f.id}" aria-label="Ubah maklumat">✏️</button><button class="del ghost" data-act="n_fdel" data-i="${f.id}">✕</button></div>`).join("") : nEmpty("Belum ada rekod minyak."));
 }
 
 /* ---------- 6. Waranti & Resit ---------- */
@@ -2481,16 +2486,16 @@ zKend = function () {
   const ym = nowYM(), yr = ym.slice(0, 4), k = (id, f) => `data-f="z_set" data-k="kv.${id}.${f}"`, op = id => (typeof nInvOpen !== "undefined" && nInvOpen.has(id)) ? "open" : "";
   const mS = Z.kv.reduce((a, v) => a + nKo(v, x => (x.date || "").slice(0, 7) === ym), 0), yS = Z.kv.reduce((a, v) => a + nKo(v, x => (x.date || "").slice(0, 4) === yr), 0), mF = (Z.fuel || []).filter(f => (f.date || "").slice(0, 7) === ym).reduce((a, f) => a + (+f.amt || 0), 0);
   const lic = Z.lic ? zb(Z.lic) : '<span class="mut">belum diisi</span>';
-  zE("zc-kend").innerHTML = `<div class="card"><div class="sum"><div><div class="mut">Servis bulan ni</div><b>${fmt(mS)}</b></div><div><div class="mut">Servis tahun ni</div><b>${fmt(yS)}</b></div></div><div class="mut" style="margin-top:6px">⛽ Minyak bulan ni ${fmt(mF)} <a href="#" data-act="open" data-t="mny" style="color:var(--ac);font-weight:700">Log Minyak</a></div></div>` +
+  zE("zc-kend").innerHTML = `<div class="card"><div class="sum"><div><div class="mut">Servis bulan ni</div><b>${fmt(mS)}</b></div><div><div class="mut">Servis tahun ni</div><b>${fmt(yS)}</b></div></div><div class="mut" style="margin-top:6px">⛽ Minyak bulan ni ${fmt(mF)} <a href="#mny" data-act="open" data-t="mny" style="color:var(--ac);font-weight:700">Log Minyak</a></div></div>` +
     Z.kv.map(v => {
       const l = zOil(v), tc = nKo(v, () => true), mc = nKo(v, x => (x.date || "").slice(0, 7) === ym), L = (v.log || []).slice().sort((a, b) => (b.date || "").localeCompare(a.date || "")), grp = {};
       L.forEach(x => { const m = (x.date || "").slice(0, 7); (grp[m] = grp[m] || []).push(x); });
       const oil = l == null ? '<span class="mut">belum direkod</span>' : `<span class="zb ${l < 0 ? "bad" : l <= 500 ? "w" : "ok"}">${l < 0 ? "lewat " + (-l) + " km" : l + " km lagi"}</span>`;
       return `<div class="card kv"><div class="kvh">${ico2(v.name)}<div class="grow" style="min-width:0"><b>${esc(v.name || "Kenderaan")}</b><div class="mut">${esc(v.plate || "Tiada no. plat")} · ${v.odo ? v.odo + " km" : "odometer belum diisi"}</div></div></div>
       <div class="kst"><div class="kch"><span>🛢️ Minyak</span>${oil}</div><div class="kch"><span>📄 Road tax</span>${v.rt ? zb(v.rt) : '<span class="mut">belum diisi</span>'}</div></div>
-      <div class="mut">Kos bulan ni <b>${fmt(mc)}</b> · Jumlah direkod <b>${fmt(tc)}</b></div>
+      <div class="mut"><span data-act="v_kopen" data-i="${v.id}" style="cursor:pointer">Kos bulan ni <b>${fmt(mc)}</b> · Jumlah direkod <b>${fmt(tc)}</b> <b style="color:var(--ac)">· lihat / ubah ›</b></span></div>
       <div class="hr2" style="margin-top:10px"><button class="pri" data-act="v_ksvc" data-i="${v.id}">＋ Servis / repair</button><button data-act="v_ksvc" data-i="${v.id}" data-j="Tukar minyak hitam">🛢️ Dah tukar minyak</button><button data-act="v_ksvc" data-i="${v.id}" data-j="Road tax & insurans">📄 Dah renew road tax</button></div>
-      <details class="kd" data-nd="kv-${v.id}" ${op("kv-" + v.id)}><summary>🧾 Rekod servis (${L.length})</summary>${L.length ? Object.keys(grp).sort().reverse().map(m => `<div class="kmh"><span>${m ? ymLabel(m) : "Tanpa tarikh"}</span><b>${fmt(grp[m].reduce((a, x) => a + (+x.kos || 0), 0))}</b></div>` + grp[m].map(x => `<div class="hrow"><span class="nm">${esc(x.jenis)}<div class="mut">${x.date ? dFmt(x.date) : "-"}${x.odo ? " · " + x.odo + " km" : ""}${x.note ? " · " + esc(x.note) : ""}</div></span><b>${x.kos ? fmt(x.kos) : "-"}</b><button class="del ghost" data-act="z_dellog" data-i="${v.id}" data-l="${x.id}">✕</button></div>`).join("")).join("") : '<div class="mut" style="padding:6px 0">Belum ada rekod.</div>'}</details>
+      <details class="kd" data-nd="kv-${v.id}" ${op("kv-" + v.id)}><summary>🧾 Rekod servis (${L.length})</summary>${L.length ? Object.keys(grp).sort().reverse().map(m => `<div class="kmh"><span>${m ? ymLabel(m) : "Tanpa tarikh"}</span><b>${fmt(grp[m].reduce((a, x) => a + (+x.kos || 0), 0))}</b></div>` + grp[m].map(x => `<div class="hrow"><span class="nm">${esc(x.jenis)}<div class="mut">${x.date ? dFmt(x.date) : "-"}${x.odo ? " · " + x.odo + " km" : ""}${x.note ? " · " + esc(x.note) : ""}</div></span><b>${x.kos ? fmt(x.kos) : "-"}</b><button class="ghost kle" data-act="v_kslog" data-i="${v.id}" data-l="${x.id}" aria-label="Ubah maklumat">✏️</button><button class="del ghost" data-act="z_dellog" data-i="${v.id}" data-l="${x.id}">✕</button></div>`).join("")).join("") : '<div class="mut" style="padding:6px 0">Belum ada rekod.</div>'}</details>
       <button class="kedit" data-act="v_kedit" data-i="${v.id}">✏️ Ubah maklumat</button></div>`;
     }).join("") + `<button data-act="z_add" data-k="kv">＋ Tambah kenderaan</button>
     <details class="card kd" data-nd="kset" ${op("kset")}><summary>⚙️ Lesen &amp; tetapan</summary><div class="frm" style="margin-top:8px"><div class="hr2"><b>🪪 Lesen memandu tamat</b>${lic}</div><input type="date" data-f="z_set" data-k="lic" value="${esc(Z.lic)}"><label class="cbl"><input type="checkbox" data-f="z_set" data-k="syncK" ${Z.syncK ? "checked" : ""}><span>Sync ke Bil bila due date dalam bulan ni</span></label></div></details>`;
@@ -2530,7 +2535,7 @@ const _zBI = zBajIncRows;
 zBajIncRows = function (r) { const a = _zBI(r), sy = Z.baj.sync; if (sy.ot && r.c.ot > 0) a.push(["OT (anggaran)", r.c.ot, 1]); if (sy.inv && r.c.inv > 0) a.push(["Invois dibayar", r.c.inv, 1]); return a; };
 zBaj = function () {
   const b = Z.baj, c = zBajCalc(), y = c.y, mo = c.mo, baki = r2(c.inc - c.tot), pct = c.inc > 0 ? Math.min(100, c.tot / c.inc * 100) : 0;
-  const row = (k, ic, nm, amt, tool, sub, inc) => k !== "sewa" && !(Math.abs(+amt) > 0) ? "" : `<div class="hrow"><input type="checkbox" data-f="z_set" data-k="baj.sync.${k}" ${b.sync[k] ? "checked" : ""}><span class="nm" data-act="open" data-t="${tool}" style="cursor:pointer;${b.sync[k] ? "" : "opacity:.5"}">${ic} ${nm}<div class="mut">${sub}</div></span><b class="${inc ? "" : "owe"}" ${inc ? 'style="color:var(--ok,#0a7a4f)"' : ""}>${inc ? "+" : ""}${fmt(amt)}</b></div>`;
+  const row = (k, ic, nm, amt, tool, sub, inc) => k !== "sewa" && !(Math.abs(+amt) > 0) ? "" : `<div class="hrow"><input type="checkbox" data-f="z_set" data-k="baj.sync.${k}" ${b.sync[k] ? "checked" : ""}><span class="nm" data-act="open" data-t="${tool}" style="cursor:pointer;${b.sync[k] ? "" : "opacity:.5"}">${ic} ${nm}<div class="mut">${sub}</div></span><b class="${inc ? "" : "owe"}" ${inc ? 'style="color:var(--ok,#0a7a4f)"' : ""}>${inc ? "+" : ""}${fmt(amt)}</b><button class="ghost rgo" data-act="open" data-t="${tool}" aria-label="Buka ${nm}">›</button></div>`;
   const sec = (t, sum, body) => !body ? "" : `<h3 class="csec">${t} <span class="mut">· ${fmt(sum)}</span></h3><div class="card">${body}</div>`;
   const sy = b.sync, ex = r2(((sy.sewa ? c.sewa : 0) + (sy.bil ? c.bil : 0) + (sy.lang ? c.lang : 0) + (sy.bel ? c.bel : 0) + (sy.kend ? c.kend : 0) + (sy.minyak ? c.minyak : 0)));
   zE("zc-baj").innerHTML = `${mnav("baj", b.ym || nowYM(), "blk")}<div class="card frm">${zBajHead(c, y, mo)}
@@ -2709,6 +2714,35 @@ try { zRender(); } catch (e) { console.error(e); }
     zsave(); zRender();
   }, true);
   try { zRender(); } catch (e) {}
+})();
+</script>
+<script type="text/rz-app">
+/* ---------- Ubah rekod servis & minyak: pop up ---------- */
+(function () {
+  if (window.__rzKS) return; window.__rzKS = 1;
+  const inp = (id, ty, val, ph, ex) => `<input type="${ty}" id="${id}" ${ty === "number" ? 'step="0.01" inputmode="decimal"' : ""} value="${esc(val == null ? "" : val)}" placeholder="${ph || ""}" ${ex || ""}>`;
+  const pop = (html, save) => { const ov = sheet(html); ov.classList.add("kpop"); ov.style.alignItems = ""; ov.addEventListener("click", ev => { if (!ev.target.closest("[data-kss]")) return; const g = id => (document.getElementById(id) || {}).value || "", msg = m => { const el = document.getElementById("ks_msg"); if (el) { el.textContent = m; el.style.color = "var(--bad)"; } }; if (save(g, msg) !== false) { sfx("pay"); zsave(); zRender(); ov.remove(); } }); return ov; };
+  document.addEventListener("click", function (e) {
+    const t = e.target.closest('[data-act="v_kopen"],[data-act="v_kslog"],[data-act="v_kfedit"]'); if (!t) return; e.stopImmediatePropagation(); e.preventDefault(); const a = t.dataset.act;
+    if (a === "v_kopen") { const d = document.querySelector('details[data-nd="kv-' + t.dataset.i + '"]'); if (d) { d.open = true; sfx("tick"); d.scrollIntoView({ behavior: "smooth", block: "center" }); } return; }
+    sfx("tick");
+    if (a === "v_kslog") {
+      const v = Z.kv.find(x => x.id === t.dataset.i), x = v && (v.log || []).find(l => l.id === t.dataset.l); if (!x) return; const lk = !!x.inc;
+      pop(shHead("✏️ Ubah maklumat") + `<div class="frm"><label class="mut">Servis / repair apa?${inp("ks_j", "text", x.jenis, "cth: brek, tayar")}</label>
+        <div class="g2"><label class="mut">Tarikh${inp("ks_d", "date", x.date, "", lk ? "disabled" : "")}</label><label class="mut">Kos (RM)${inp("ks_k", "number", +x.kos || "", "RM", lk ? "disabled" : "")}</label></div>
+        <label class="mut">Odometer (km)${inp("ks_o", "number", x.odo, "km")}</label><label class="mut">Catatan${inp("ks_n", "text", x.note, "pilihan")}</label>
+        ${lk ? '<div class="mut">Tarikh dan kos rekod ni datang dari <b>Pendapatan</b>. Ubah di sana kalau nak tukar.</div>' : ""}
+        <div class="mut" id="ks_msg" style="min-height:16px"></div><button class="pri" data-kss="1" style="width:100%;min-height:46px">✔ Simpan perubahan</button></div>`,
+        (g, msg) => { if (!g("ks_j").trim()) { msg("Isi nama servis."); return false; } x.jenis = g("ks_j").trim(); x.odo = g("ks_o") === "" ? "" : num(g("ks_o")); x.note = g("ks_n").trim(); if (!lk) { x.date = g("ks_d") || x.date; x.kos = num(g("ks_k")); } });
+    } else {
+      const f = (Z.fuel || []).find(z => z.id === t.dataset.i); if (!f) return; const lk = !!f.inc;
+      pop(shHead("✏️ Ubah maklumat") + `<div class="frm"><div class="g2"><label class="mut">Tarikh${inp("kf_d", "date", f.date, "", lk ? "disabled" : "")}</label><label class="mut">Odometer (km)${inp("kf_o", "number", f.odo, "cth 45210")}</label></div>
+        <div class="g2"><label class="mut">Liter${inp("kf_l", "number", +f.l || "", "cth 28.5")}</label><label class="mut">Bayar (RM)${inp("kf_a", "number", +f.amt || "", "RM", lk ? "disabled" : "")}</label></div>
+        ${lk ? '<div class="mut">Rekod ni datang dari <b>Pendapatan</b>, jadi tarikh dan jumlah ikut sana. Boleh isi odometer dan liter di sini supaya kiraan km/L tepat.</div>' : ""}
+        <div class="mut" id="ks_msg" style="min-height:16px"></div><button class="pri" data-kss="1" style="width:100%;min-height:46px">✔ Simpan perubahan</button></div>`,
+        (g, msg) => { if (!lk && num(g("kf_a")) <= 0) { msg("Isi amaun."); return false; } f.odo = g("kf_o") === "" ? "" : num(g("kf_o")); f.l = g("kf_l") === "" ? "" : num(g("kf_l")); if (!lk) { f.date = g("kf_d") || f.date; f.amt = num(g("kf_a")); } const v = Z.kv.find(z => z.id === f.v); if (v && num(f.odo) > (+v.odo || 0)) v.odo = num(f.odo); });
+    }
+  }, true);
 })();
 </script>
 <script>
@@ -3277,7 +3311,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111450",NOTES=[{"v":"2026111450","t":"Hutang Member dua arah","l":["Kini ada dua tab: Member hutang aku, dan Aku hutang member","Catat hutang kau kepada member, bayar ansur-ansur, dan nampak jumlah yang kau kena bayar","Rekod hutang sedia ada tak berubah"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111453",NOTES=[{"v":"2026111453","t":"Hari ni lebih kemas","l":["Hari ni hanya tunjuk bahagian yang ada isi: peringatan, bil belum bayar, hutang nak kutip dan baki bajet","Kalau semua kosong, keluar mesej 'Semua beres hari ni'"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
