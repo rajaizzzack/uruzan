@@ -351,7 +351,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-f
 .lgopt small{opacity:.6;font-weight:500}
 </style><style>
 #qaDial{position:fixed;inset:0;z-index:59;background:rgba(10,15,20,0);transition:background .25s;-webkit-tap-highlight-color:transparent}
-#qaDial.open{background:rgba(10,15,20,.45)}
+#qaDial.open{background:rgba(10,15,20,.26)}
 #qaDial .qdi{position:absolute;z-index:61;width:88px;height:88px;min-height:0;padding:0;border-radius:50%;border:0;background:var(--card);color:var(--tx);box-shadow:0 10px 26px rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;opacity:0;transform:translate(0,0) scale(.2);transition:transform .38s cubic-bezier(.2,.9,.3,1.35) var(--dl),opacity .2s var(--dl)}
 #qaDial.open .qdi{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1)}
 #qaDial .qdedit.hot{transform:scale(1.25);box-shadow:0 0 0 3px var(--ac)}#qaDial .qdi:active{filter:brightness(.92)}#qaDial .qdi.hot{transform:translate(var(--dx),var(--dy)) scale(1.18);box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 0 3px var(--ac)}#nav .navadd{touch-action:none}
@@ -618,17 +618,18 @@ function closeDial() {
   const d = document.getElementById("qaDial"); if (!d) return;
   document.body.classList.remove("dial-open"); d.classList.remove("open"); setTimeout(() => d.remove(), 260);
 }
+function dTone(k) { try { window.__sfxT = performance.now(); if (window.rzTone) rzTone(k); else sfx(k === "open" || k === "sel" ? "pop" : "tick"); } catch (e) {} try { if (navigator.vibrate && (k === "sel" || k === "open")) navigator.vibrate(k === "sel" ? 14 : 8); } catch (e) {} }
 function toggleDial() {
-  if (document.getElementById("qaDial")) return closeDial();
+  if (document.getElementById("qaDial")) { dTone("low"); return closeDial(); }
   const btn = document.querySelector("#nav .navadd"); if (!btn) return addSheet("bel");
   const r = btn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, R = 128;
   const d = document.createElement("div"); d.id = "qaDial"; d.setAttribute("role", "menu");
   const items = qaItems();
   d.innerHTML = items.map((it, i) => { const pc = innerWidth >= 900, ang = it[3] * Math.PI / 180, dx = pc ? 150 : Math.round(R * Math.cos(ang)), dy = pc ? i * 100 : Math.round(-R * Math.sin(ang) - (i === 1 ? 6 : 0));
     return `<button class="qdi" role="menuitem" data-qd="${it[0]}" style="left:${Math.round(cx - 44)}px;top:${Math.round(cy - 44)}px;--dx:${dx}px;--dy:${dy}px;--dl:${i * 55}ms" data-tx="${Math.round(cx + dx)}" data-ty="${Math.round(cy + dy)}"><i>${it[1]}</i><span>${it[2]}</span></button>`; }).join("");
-  d.addEventListener("click", e => { const b = e.target.closest("[data-qd]"); sfx("tick"); closeDial(); if (b) setTimeout(() => qaGo(b.dataset.qd), 120); });
+  d.addEventListener("click", e => { const b = e.target.closest("[data-qd]"); if (b) { b.classList.add("pick"); dTone("sel"); setTimeout(() => { closeDial(); qaGo(b.dataset.qd); }, 190); } else { dTone("tick"); closeDial(); } });
   d.insertAdjacentHTML("beforeend", `<button class="qdedit" data-qe="1" data-tx="${Math.round(cx + (innerWidth >= 900 ? 150 : 0))}" data-ty="${innerWidth >= 900 ? Math.round(cy + 200 + 74 + 24) : Math.round(cy - (R + 112) + 24)}" aria-label="Ubah pintasan" title="Ubah pintasan" style="left:${Math.round(cx + (innerWidth >= 900 ? 150 : 0) - 24)}px;top:${Math.round(innerWidth >= 900 ? cy + 200 + 74 : cy - (R + 112))}px">✏️</button>`);
-  document.body.appendChild(d); document.body.classList.add("dial-open");
+  document.body.appendChild(d); document.body.classList.add("dial-open"); dTone("open");
   requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add("open")));
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDial(); });
@@ -636,22 +637,22 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") closeDial();
   let st = null, swallow = false;
   const hot = (x, y) => { let best = null, bd = 62; document.querySelectorAll("#qaDial .qdi,#qaDial .qdedit").forEach(b => { const d = Math.hypot(x - +b.dataset.tx, y - +b.dataset.ty); const on = d < (b.dataset.qe ? 46 : 62) && d < bd; if (on) { bd = d; best = b; } b.classList.remove("hot"); }); if (best) best.classList.add("hot"); return best; };
   const onPlus = (x, y) => { const b = document.querySelector("#nav .navadd"); if (!b) return false; const r = b.getBoundingClientRect(), pad = 8; return x >= r.left - pad && x <= r.right + pad && y >= r.top - pad && y <= r.bottom + pad; };
-  document.addEventListener("pointerdown", e => { const b = e.target.closest && e.target.closest("#nav .navadd"); if (!b) return; st = { x: e.clientX, y: e.clientY, drag: false, id: e.pointerId }; }, true);
+  document.addEventListener("pointerdown", e => { const b = e.target.closest && e.target.closest("#nav .navadd"); if (!b) return; st = { x: e.clientX, y: e.clientY, drag: false, id: e.pointerId, last: null }; b.classList.add("prs"); }, true);
   document.addEventListener("pointermove", e => {
     if (!st || e.pointerId !== st.id) return;
     const dy = e.clientY - st.y, dx = e.clientX - st.x;
-    if (!st.drag && dy < -14 && Math.abs(dy) > Math.abs(dx) * .6) { st.drag = true; if (!document.getElementById("qaDial")) { sfx("tick"); toggleDial(); } }
-    if (st.drag) { const h = hot(e.clientX, e.clientY), op = !h && onPlus(e.clientX, e.clientY), b = document.querySelector("#nav .navadd"); if (b) b.classList.toggle("cx", op); }
+    if (!st.drag && dy < -34 && Math.abs(dy) > Math.abs(dx) * .6) { st.drag = true; if (!document.getElementById("qaDial")) { toggleDial(); } }
+    if (st.drag) { const h = hot(e.clientX, e.clientY), op = !h && onPlus(e.clientX, e.clientY), b = document.querySelector("#nav .navadd"); if (b) b.classList.toggle("cx", op); if (h !== st.last) { st.last = h; if (h) dTone(h.dataset.qe ? "tick" : "d" + (1 + [...document.querySelectorAll("#qaDial .qdi")].indexOf(h))); else if (op) dTone("tick"); } }
   }, true);
   const end = e => {
     if (!st || e.pointerId !== st.id) return;
-    const was = st; st = null;
-    if (!was.drag) return;
+    const was = st; st = null; { const pb0 = document.querySelector("#nav .navadd"); if (pb0) pb0.classList.remove("prs"); }
+    if (!was.drag) { const mv = Math.hypot(e.clientX - was.x, e.clientY - was.y); if (e.type === "pointerup" && mv > 8 && mv <= 34 && onPlus(e.clientX, e.clientY)) { swallow = true; setTimeout(() => { swallow = false; }, 400); sfx("tick"); toggleDial(); } return; }
     swallow = true; setTimeout(() => { swallow = false; }, 400);
     if (e.type === "pointercancel") return;
     const it = hot(e.clientX, e.clientY), pb = document.querySelector("#nav .navadd"); if (pb) pb.classList.remove("cx");
     if (!it && onPlus(e.clientX, e.clientY)) { sfx("low"); closeDial(); return; }
-    if (it) { sfx("tick"); const k = it.dataset.qd; closeDial(); setTimeout(() => (it.dataset.qe ? qaCfg() : qaGo(k)), 120); }
+    if (it) { dTone("sel"); const k = it.dataset.qd; it.classList.add("pick"); setTimeout(() => { closeDial(); (it.dataset.qe ? qaCfg() : qaGo(k)); }, 190); }
   };
   document.addEventListener("pointerup", end, true); document.addEventListener("pointercancel", end, true);
   document.addEventListener("click", e => { if (swallow && e.target.closest && e.target.closest("#nav .navadd")) { e.stopPropagation(); e.preventDefault(); swallow = false; } }, true);
@@ -677,7 +678,7 @@ function addSheet(tab) {
     <input type="file" id="qa_file" accept="image/*" multiple>
     <button class="pri" data-qs="claim" style="min-height:46px">+ Simpan claim</button></div>`;
   }
-  box.innerHTML = shHead("Tambah cepat") + `<div class="qtabs">${T("bel", "💸 Belanja")}${T("hut", "🤝 Hutang")}${T("claim", "🧾 Claim")}${zIncOn() || tab === "inc" ? T("inc", "💵 Pendapatan") : ""}</div>${f}<div class="qmsg" id="qaMsg"></div>`;
+  box.innerHTML = shHead("Tambah cepat") + `<div style="font-weight:700;font-size:16px;margin:0 0 12px">${{ bel: "💸 Belanja", hut: "🤝 Hutang", claim: "🧾 Claim", inc: "💵 Pendapatan" }[tab] || ""}</div>${f}<div class="qmsg" id="qaMsg"></div>`;
   if (old) return;
   ov.addEventListener("change", async e => {
     const t = e.target;
@@ -1439,7 +1440,7 @@ document.addEventListener("click", e => {
   if (a === "inst_x") { try { localStorage.setItem("rz_inst_x", "1"); } catch (e) {} instBn(); return; }
   if (a === "nav_more") { sfx("tick"); moreSheet(); return; }
   if (a === "nav_today") { sfx("tick"); todaySheet(); return; }
-  if (a === "nav_add") { sfx("tick"); toggleDial(); return; }
+  if (a === "nav_add") { toggleDial(); return; }
   if (a === "nav_share") { sfx("tick"); shareSheet(); return; }
   if (a.indexOf("sh_") === 0) { shAct(a); return; }
   if (a.indexOf("bk_") === 0) { bkAct(a); return; }
@@ -2978,6 +2979,17 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac)!impo
 @keyframes inrip{0%{opacity:.7;transform:scale(.6)}100%{opacity:0;transform:scale(1.5)}}
 @media(prefers-reduced-motion:reduce){.intro *{animation:none!important}}
 </style>
+<style id="rzPgCss">.rov.pg .phd>button[data-x],.rov.pg .phd>button[data-z="x"]{display:none}.rov.pg>.rbox,.rov.pg>.rzbox{overscroll-behavior:none;touch-action:pan-y}</style>
+<style id="rzDialFx">
+#nav .navadd.prs{transform:scale(.88)!important;transition:transform .12s ease!important}
+body.dial-open #nav .navadd{animation:plusRing .55s ease-out}
+@keyframes plusRing{0%{box-shadow:0 8px 20px rgba(15,118,110,.45),0 0 0 0 rgba(45,212,191,.65)}100%{box-shadow:0 8px 20px rgba(15,118,110,.45),0 0 0 30px rgba(45,212,191,0)}}
+#qaDial .qdi.pick,#qaDial .qdedit.pick{animation:qdPick .19s ease-out both}
+@keyframes qdPick{0%{filter:brightness(1)}50%{filter:brightness(1.25);box-shadow:0 0 0 7px var(--ac)}100%{filter:brightness(1);box-shadow:0 0 0 3px var(--ac)}}
+#qaDial .qdi.hot i{animation:qdWig .35s ease-in-out}
+@keyframes qdWig{0%,100%{transform:rotate(0)}30%{transform:rotate(-10deg) scale(1.12)}65%{transform:rotate(8deg) scale(1.12)}}
+@media(prefers-reduced-motion:reduce){body.dial-open #nav .navadd,#qaDial .qdi.hot i,#qaDial .qdi.pick{animation:none!important}}
+</style>
 <script>
 /* ===== LOGIN / AKAUN (Uruzan) ===== */
 (function () {
@@ -3057,7 +3069,7 @@ document.addEventListener("keydown", e => {
 });
 (function () {
   let ov = null, box = null, y0 = 0, dy = 0, drag = false;
-  const hit = t => { const o = t.closest && t.closest(".rov"); if (!o || !(o.id === "rzPanel" || o.classList.contains("swp"))) return null; const b = t.closest(".rzbox,.rbox"); return b && b.parentNode === o ? { o, b } : null; };
+  const hit = t => { const o = t.closest && t.closest(".rov"); if (!o || o.classList.contains("pg") || !(o.id === "rzPanel" || o.classList.contains("swp"))) return null; const b = t.closest(".rzbox,.rbox"); return b && b.parentNode === o ? { o, b } : null; };
   document.addEventListener("touchstart", e => { const r = hit(e.target); if (!r || e.touches.length !== 1) { box = null; return; } ov = r.o; box = r.b; y0 = e.touches[0].clientY; dy = 0; drag = false; }, { passive: true });
   document.addEventListener("touchmove", e => { if (!box) return; const d = e.touches[0].clientY - y0; if (!drag) { if (d > 10 && box.scrollTop <= 0) { drag = true; box.style.animation = "none"; } else return; } dy = Math.max(0, d); box.style.transition = "none"; box.style.transform = "translateY(" + dy + "px)"; ov.style.background = "rgba(0,0,0," + (.6 * (1 - Math.min(1, dy / 420))).toFixed(2) + ")"; e.preventDefault(); }, { passive: false });
   document.addEventListener("touchend", () => { if (!box) return; const b = box, o = ov; box = null; if (!drag) return;
@@ -3564,7 +3576,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111472",NOTES=[{"v": "2026111472", "t": "Skrin pembuka app", "l": ["Bila buka dari ikon di skrin utama, muncul ikon Uruzan dengan 'Kit untuk urusan harian anda' sebentar", "Hanya keluar sekali setiap kali app dibuka"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111476",NOTES=[{"v": "2026111476", "t": "Bunyi dan animasi butang ＋", "l": ["Tekan atau leret ＋ ada bunyi dan animasi: ＋ mengecil bila ditekan dan berdenyut bila dibuka", "Leret melepasi Belanja, Claim, Pendapatan bunyi nota berbeza dan ikon bergoyang", "Lepas pilih ada bunyi dan kesan denyut sebelum pop-up dibuka"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
@@ -3691,7 +3703,7 @@ document.addEventListener("click",function(e){var b=e.target.closest("#nav butto
 "use strict";
 var ac=null,lastT=0;
 var K={tick:[[520,.06,0]],pop:[[500,.08,0],[750,.1,.06]],chime:[[523,.2,0],[659,.2,.09],[784,.3,.18]],
-  swoosh:[[240,.24,0,"sine",900],[420,.2,.05,"triangle",1300]],welcome:[[523,.2,0],[659,.2,.1],[784,.2,.2],[1047,.45,.3]],low:[[330,.12,0],[247,.18,.08]]};
+  swoosh:[[240,.24,0,"sine",900],[420,.2,.05,"triangle",1300]],welcome:[[523,.2,0],[659,.2,.1],[784,.2,.2],[1047,.45,.3]],low:[[330,.12,0],[247,.18,.08]],open:[[392,.07,0],[523,.07,.055],[659,.09,.11]],d1:[[523,.09,0]],d2:[[659,.09,0]],d3:[[784,.11,0]],sel:[[659,.07,0],[988,.14,.06]]};
 function muted(){
   try{if(typeof SND!=="undefined")return !SND;}catch(e){}
   try{return localStorage.getItem("sewa_snd")==="0";}catch(e){}
