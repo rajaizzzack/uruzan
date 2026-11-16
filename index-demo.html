@@ -3407,6 +3407,10 @@ try { zRender(); } catch (e) { console.error(e); }
 #rzFb:active{transform:scale(.95)}body:has(#home:not([hidden])) #rzFb{right:78px}body:has(#shareFab.sc) #rzFb{opacity:.15;pointer-events:none}
 @media(min-width:900px){#rzFb{right:96px;bottom:31px}body:has(#home[hidden]) #rzFb{right:28px;bottom:24px}}
 @media print{#rzFb{display:none!important}}
+.b7l{display:flex!important;flex-direction:column;align-items:stretch!important;margin:0 0 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
+.b7l select,.b7l textarea{display:block;width:100%;margin-top:6px;box-sizing:border-box;font:500 15px/1.4 inherit;font-family:inherit;text-transform:none;letter-spacing:0;color:var(--tx);background:var(--in);border:1px solid transparent;border-radius:14px;padding:12px 14px;outline:none;transition:border-color .2s}
+.b7l select:focus,.b7l textarea:focus{border-color:var(--ac)}.b7l textarea{resize:vertical;min-height:110px}
+.b7ft{font-size:12.5px;color:var(--mut);margin:0 2px}
 #b7lang{width:100%;margin:8px 0;text-align:left;display:flex;gap:12px;align-items:center}#b7lang .big{margin:0;font-size:26px}`;
   document.head.appendChild(css);
   const ver = () => { try { return "v1." + Number(String(window.RZUPD.ver).slice(8)); } catch (e) { return ""; } };
@@ -3417,10 +3421,34 @@ try { zRender(); } catch (e) { console.error(e); }
   }
   inject(); setTimeout(inject, 1500);
   let rq = 0; new MutationObserver(() => { if (rq) return; rq = requestAnimationFrame(() => { rq = 0; inject(); }); }).observe(document.body, { childList: true, subtree: true });
+  const TYPES = ["Tak berfungsi atau ada ralat", "Paparan tak betul atau bertindih", "Kiraan atau data tak tepat", "Cadangan baru", "Lain-lain"];
+  function curTool() { const h = (location.hash || "").replace("#", ""); try { if (h && NV.some(x => x[0] === h)) return h; if (h === "lang") return "lang"; } catch (e) {} return ""; }
+  function devInfo() {
+    const u = navigator.userAgent || "", os = /Android/i.test(u) ? "Android" : /iPhone|iPad|iPod/i.test(u) ? "iOS" : /Windows/i.test(u) ? "Windows" : /Mac/i.test(u) ? "Mac" : /Linux/i.test(u) ? "Linux" : "Lain";
+    const br = /Edg\//.test(u) ? "Edge" : /OPR\//.test(u) ? "Opera" : /Firefox/i.test(u) ? "Firefox" : /Chrome|CriOS/i.test(u) ? "Chrome" : /Safari/i.test(u) ? "Safari" : "Pelayar lain";
+    const pwa = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+    return os + ", " + br + (pwa ? ", app dipasang" : ", dalam pelayar") + ", " + innerWidth + "x" + innerHeight;
+  }
+  function problemSheet() {
+    const cur = curTool(), opt = (v, t, sel) => `<option value="${esc(v)}" ${sel ? "selected" : ""}>${esc(t)}</option>`;
+    const tools = NV.map(x => opt(x[0], ttl(x[0]), x[0] === cur)).join("") + opt("lang", "Langganan (dalam Bil Tertunggak)", cur === "lang");
+    const ov = sheet(shHead("Ada masalah?") + `<div class="mut" style="margin:0 2px 12px">Ceritakan masalah yang kau jumpa. Aku akan baca melalui WhatsApp dan perbaiki.</div>
+<label class="b7l">Di mana masalahnya?<select id="b7t"><option value="">Menu atau umum</option>${opt("__hari", "Hari ni", false)}${opt("__profil", "Profil dan tetapan", false)}${tools}</select></label>
+<label class="b7l">Jenis masalah<select id="b7y">${TYPES.map((t, i) => opt(t, t, i === 0)).join("")}</select></label>
+<label class="b7l">Apa yang berlaku?<textarea id="b7d" rows="5" maxlength="1000" placeholder="Contoh: bila tekan Simpan, tiada apa berlaku. Aku tekan dua kali pun sama."></textarea></label>
+<div class="mut" id="b7m" style="min-height:18px;margin:2px 2px 8px"></div>
+<div class="b7ft">Hanya apa yang kau tulis dan maklumat peranti ringkas dihantar. Tiada data kewangan kau. Lepas WhatsApp terbuka, kau boleh lampirkan tangkap skrin.</div>
+<div class="row" style="margin-top:12px"><button class="pri grow" id="b7go">Hantar ke WhatsApp</button><button id="b7cp">Salin</button></div>`);
+    const tsel = ov.querySelector("#b7t"), build = () => {
+      const t = tsel.value, tn = t === "" ? "Menu atau umum" : t === "__hari" ? "Hari ni" : t === "__profil" ? "Profil dan tetapan" : t === "lang" ? "Langganan" : ttl(t), d = ov.querySelector("#b7d").value.trim();
+      return "Maklum balas Uruzan (" + ver() + ")\n\nTool: " + tn + "\nJenis: " + ov.querySelector("#b7y").value + "\n\nMasalah:\n" + d + "\n\nPeranti: " + devInfo();
+    }, ok = () => { const d = ov.querySelector("#b7d"), m = ov.querySelector("#b7m"); if (d.value.trim().length < 5) { m.textContent = "Tulis sikit apa yang berlaku (sekurang-kurangnya beberapa patah perkataan)."; m.style.color = "var(--bad)"; d.focus(); try { window.sfx && sfx("low"); } catch (e) {} return false; } m.textContent = ""; return true; };
+    ov.querySelector("#b7go").onclick = () => { if (!ok()) return; try { window.sfx && sfx("chime"); } catch (e) {} window.open("https://wa.me/60176387664?text=" + encodeURIComponent(build()), "_blank", "noopener"); };
+    ov.querySelector("#b7cp").onclick = () => { if (!ok()) return; const t = build(), m = ov.querySelector("#b7m"), done = () => { m.textContent = "Dah disalin. Tampal dalam WhatsApp."; m.style.color = "var(--ok)"; }; if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, () => { m.textContent = "Tak dapat salin."; }); else { const ta = ov.querySelector("#b7d"); ta.select(); try { document.execCommand("copy"); done(); } catch (e) {} } };
+  }
   document.addEventListener("click", e => {
     const b = e.target.closest && e.target.closest("#rzFb"); if (!b) return; e.stopImmediatePropagation(); e.preventDefault();
-    try { window.sfx && sfx("tick"); } catch (er) {}
-    window.open("https://wa.me/60176387664?text=" + encodeURIComponent("Maklum balas Uruzan (" + ver() + ")\n\n"), "_blank", "noopener");
+    try { window.sfx && sfx("tick"); } catch (er) {} problemSheet();
   }, true);
 })();
 </script>
@@ -4417,7 +4445,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="20261116102",NOTES=[{"v": "20261116102", "t": "Ikon garis minimalis", "l": ["Emoji diganti ikon garis yang kemas dan sepadan warna tema", "Kad tool lebih ringkas: petak neutral dengan ikon beraksen", "Avatar profil kekal pilihan sendiri"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="20261117103",NOTES=[{"v": "20261117103", "t": "Lapor masalah dengan butiran", "l": ["Butang 'Ada masalah?' buka borang: pilih tool, jenis masalah dan tulis apa berlaku", "Mesej dihantar ke WhatsApp dengan versi app dan maklumat peranti ringkas", "Tool semasa dipilih secara automatik; tiada data kewangan dihantar"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 var viaUpd=location.search.indexOf("v=")>=0;try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
