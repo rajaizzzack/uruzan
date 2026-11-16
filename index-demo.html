@@ -711,7 +711,7 @@ function addSheet(tab) {
     if (!ov._ph) ov._ph = []; if (!ov._ct || !C.set.types.some(x => x.id === ov._ct)) ov._ct = C.set.types[0].id; if (!ov._cd) ov._cd = today();
     const ct = ctp(ov._ct), isKm = ct.kind === "km";
     f = `<div class="qf"><select id="qa_type">${C.set.types.map(x => `<option value="${x.id}" ${x.id === ov._ct ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select><input type="date" id="qa_date" value="${esc(ov._cd)}">
-    ${isKm ? `<input type="text" id="qa_from" placeholder="Dari (lokasi)"><input type="text" id="qa_to" placeholder="Ke (lokasi)"><input type="number" step="0.1" inputmode="decimal" id="qa_km" placeholder="Jarak (km)"><div class="mut" id="qa_calc">Kadar ${fmt(C.set.rate)}/km</div>` : `<input type="number" step="0.01" inputmode="decimal" id="qa_amt" placeholder="Amaun (RM)">`}
+    ${isKm ? `<input type="text" id="qa_from" placeholder="Dari (lokasi)"><input type="text" id="qa_to" placeholder="Ke (lokasi)"><select id="qa_veh" aria-label="Kenderaan">${cVopts(ov._cv || cVeh()[0].id)}</select><input type="number" step="0.1" inputmode="decimal" id="qa_km" placeholder="Jarak (km)"><div class="mut" id="qa_calc">Kadar ${fmt(cVr(ov._cv || cVeh()[0].id))}/km</div>` : `<input type="number" step="0.01" inputmode="decimal" id="qa_amt" placeholder="Amaun (RM)">`}
     <input type="text" id="qa_desc" placeholder="${isKm ? "Tujuan / catatan (tak wajib)" : "Butiran (cth: parking KLCC)"}">
     <div class="mut">Gambar resit: <b>${ct.req ? "WAJIB" : "tak wajib"}</b> <span id="qa_ph">${ov._ph.length ? "· " + ov._ph.length + " gambar dipilih ✅" : ""}</span></div>
     <input type="file" id="qa_file" accept="image/*" multiple>
@@ -723,6 +723,7 @@ function addSheet(tab) {
     const t = e.target;
     if (t.id === "qa_type") { ov._ct = t.value; const d = document.getElementById("qa_date"); if (d) ov._cd = d.value; addSheet("claim"); }
     else if (t.id === "qa_date") ov._cd = t.value;
+    else if (t.id === "qa_veh") ov._cv = t.value;
     else if (t.id === "qa_bd") ov._bd = t.value;
     else if (t.id === "qa_file" && t.files.length) {
       const ph = document.getElementById("qa_ph"); if (ph) ph.textContent = "· memproses gambar...";
@@ -738,10 +739,10 @@ function addSheet(tab) {
       const t = ctp(ov._ct), isKm = t.kind === "km", date = v("qa_date"), bad = m => { const el = document.getElementById("qaMsg"); if (el) { el.textContent = m; el.style.color = "var(--bad)"; } };
       if (!date) return bad("Isi tarikh.");
       let amt, kmv = 0;
-      if (isKm) { kmv = num(v("qa_km")); if (kmv <= 0) return bad("Isi jarak km."); amt = r2(kmv * C.set.rate); } else { amt = r2(num(v("qa_amt"))); if (amt <= 0) return bad("Isi amaun."); }
+      if (isKm) { kmv = num(v("qa_km")); if (kmv <= 0) return bad("Isi jarak km."); amt = r2(kmv * cVr(v("qa_veh") || cVeh()[0].id)); } else { amt = r2(num(v("qa_amt"))); if (amt <= 0) return bad("Isi amaun."); }
       if (t.req && !ov._ph.length) return bad("Claim jenis " + t.name + " wajib ada gambar.");
       const c = { id: uid(), ts: Date.now(), type: t.id, date, desc: v("qa_desc").trim(), amt, photos: ov._ph.slice() };
-      if (isKm) Object.assign(c, { from: v("qa_from").trim(), to: v("qa_to").trim(), odoS: "", odoE: "", km: kmv, rate: C.set.rate });
+      if (isKm) Object.assign(c, { from: v("qa_from").trim(), to: v("qa_to").trim(), odoS: "", odoE: "", km: kmv, rate: cVr(v("qa_veh") || cVeh()[0].id), veh: v("qa_veh") || cVeh()[0].id, vn: cVn(v("qa_veh") || cVeh()[0].id) });
       C.claims.push(c); c.photos.forEach(id => idbPut(id, PH[id])); ov._ph = []; ov._cd = date;
       try { cRender(); } catch (er) {} sfx("pay"); ov.remove(); rzToast("Claim dicatat ✅ " + fmt(amt));
       return;
@@ -1098,6 +1099,10 @@ function cdef() {
     { id: "t_makan", name: "Makan", req: true, kind: "amt" },
     { id: "t_lain", name: "Lain-lain", req: true, kind: "amt" }] }, claims: [] };
 }
+function cVeh() { const st = C.set; if (!Array.isArray(st.veh) || !st.veh.length) { const r = +st.rate > 0 ? +st.rate : 0.6; st.veh = [{ id: "v_car", name: "Kereta", rate: r }, { id: "v_moto", name: "Motosikal", rate: 0.30 }, { id: "v_lain", name: "Lain-lain", rate: r }]; } return st.veh; }
+const cVr = id => { const v = cVeh().find(x => x.id === id); return v ? (+v.rate || 0) : C.set.rate; };
+const cVn = id => { const v = cVeh().find(x => x.id === id); return v ? v.name : ""; };
+const cVopts = sel => cVeh().map(v => `<option value="${v.id}" ${v.id === sel ? "selected" : ""}>${esc(v.name)} (${fmt(v.rate)}/km)</option>`).join("");
 let C, CF = null, CMON = "all", CSET = false, CRATE = false, CLOPEN = true, CCOL = {};
 const PH = {}; let DB = null;
 try { C = JSON.parse(localStorage.getItem(CK)); } catch (e) { C = null; }
@@ -1118,7 +1123,7 @@ function cDetail(c) {
   const t = ctp(c.type), p = [];
   if (t.kind === "km") {
     p.push(`${esc(c.from || "?")} → ${esc(c.to || "?")}`);
-    p.push(`${c.km || 0} km${c.odoS !== "" && c.odoS != null && c.odoE !== "" && c.odoE != null ? ` (odo ${c.odoS} → ${c.odoE})` : ""} @ ${fmt(c.rate != null ? c.rate : C.set.rate)}/km`);
+    p.push(`${c.km || 0} km${c.odoS !== "" && c.odoS != null && c.odoE !== "" && c.odoE != null ? ` (odo ${c.odoS} → ${c.odoE})` : ""} @ ${fmt(c.rate != null ? c.rate : C.set.rate)}/km${c.vn ? " · " + esc(c.vn) : ""}`);
   }
   if (c.desc) p.push(esc(c.desc));
   return p;
@@ -1131,7 +1136,7 @@ function cRender() {
     ${miss ? `<div class="warn" style="margin-top:8px">⚠️ ${miss} tuntutan wajib gambar tapi belum ada gambar</div>` : ""}
     ${DB ? "" : `<div class="warn" style="margin-top:8px">Browser ni tak benarkan simpan gambar kekal. Gambar hilang kalau tutup page.</div>`}
     <div class="row cmn">${mnav("claim", CMON === "all" ? nowYM() : CMON, CMON === "all" ? "dim" : "")}<button class="chip ${CMON === "all" ? "on" : ""}" data-mn="claim" data-d="all">Semua</button></div>
-    ${CRATE ? `<div class="rate"><label class="mut">RM/km <input type="number" step="0.01" id="cr_val" value="${C.set.rate}"></label><button class="pri" data-act="c_ratesave">Simpan</button><button data-act="c_rateall">Simpan + kira semula</button><button class="ghost" data-act="c_ratex">Batal</button></div><div class="mut">Simpan = kadar untuk tuntutan baru. Kira semula = kemas kini semua mileage dalam paparan ni.</div>` : `<div class="rate"><span class="mut">Kadar mileage</span><b>${fmt(C.set.rate)}/km</b><button class="pen" data-act="c_rate" aria-label="Edit kadar mileage">✏️</button></div>`}</div>
+    ${CRATE ? `<div class="rate" style="flex-wrap:wrap">${cVeh().map(v => `<label class="mut">${esc(v.name)} RM/km <input type="number" step="0.01" id="cr_${v.id}" value="${v.rate}"></label>`).join("")}<button class="pri" data-act="c_ratesave">Simpan</button><button data-act="c_rateall">Simpan + kira semula</button><button class="ghost" data-act="c_ratex">Batal</button></div><div class="mut">Simpan = kadar untuk tuntutan baru. Kira semula = kemas kini semua mileage dalam paparan ni.</div>` : `<div class="rate" style="flex-wrap:wrap"><span class="mut">Kadar mileage</span><b>${cVeh().map(v => esc(v.name) + " " + fmt(v.rate)).join(" · ")} /km</b><button class="pen" data-act="c_rate" aria-label="Edit kadar mileage">✏️</button></div>`}</div>
     <button class="pri cadd" data-act="c_add">＋ Tambah claim</button>`;
   { const cards = L.map(c => {
     const t = ctp(c.type), d = cDetail(c), col = !!CCOL[c.id];
@@ -1146,7 +1151,9 @@ function cRender() {
     <div class="hr2"><input type="text" placeholder="Nama staf" data-f="c_name" value="${esc(C.set.name)}"></div>
     <div class="hr2"><input type="text" placeholder="Jawatan / No. staf" data-f="c_pos" value="${esc(C.set.pos)}"></div>
     <div class="hr2"><input type="text" placeholder="Nama syarikat" data-f="c_co" value="${esc(C.set.co)}"></div>
-    <div class="hr2"><label class="mut">Kadar mileage RM/km <input type="number" step="0.01" data-f="c_rate" value="${C.set.rate}"></label></div>
+    <h3 style="margin-top:12px">Kadar mileage ikut kenderaan</h3>
+    ${cVeh().map((v, k) => `<div class="hr2"><input type="text" data-f="c_vname" data-i="${v.id}" value="${esc(v.name)}"><label class="mut">RM/km <input type="number" step="0.01" data-f="c_vrate" data-i="${v.id}" value="${v.rate}"></label>${k === 0 ? "" : `<button class="del" data-act="c_vdel" data-i="${v.id}" aria-label="Padam">✕</button>`}</div>`).join("")}
+    <button data-act="c_vadd">+ Jenis kenderaan</button>
     <h3 style="margin-top:12px">Jenis claim</h3>
     ${C.set.types.map(t => `<div class="hr2"><input type="text" data-f="c_tname" data-i="${t.id}" value="${esc(t.name)}"><label class="mut"><input type="checkbox" data-f="c_treq" data-i="${t.id}" ${t.req ? "checked" : ""}> Gambar wajib</label>${t.kind === "km" ? `<span class="mut">(mileage)</span>` : `<button class="del" data-act="c_tdel" data-i="${t.id}">✕</button>`}</div>`).join("")}
     <button data-act="c_tadd">+ Jenis baru</button></div>`;
@@ -1159,7 +1166,7 @@ function cThumbs() {
 }
 function cReadForm() {
   if (!CF || !document.getElementById("cf_date")) return;
-  { const re = document.getElementById("cf_rate"); if (re) CF.rate = re.value; }
+  { const re = document.getElementById("cf_rate"); if (re) CF.rate = re.value; const ve = document.getElementById("cf_veh"); if (ve) CF.veh = ve.value; }
   const g = id => { const e = document.getElementById(id); return e ? e.value : null; };
   CF.type = g("cf_type") || CF.type; CF.date = g("cf_date") || CF.date;
   ["desc", "amt", "from", "to", "odoS", "odoE", "km"].forEach(k => { const m = { desc: "cf_desc", amt: "cf_amt", from: "cf_from", to: "cf_to", odoS: "cf_os", odoE: "cf_oe", km: "cf_km" }[k], v = g(m); if (v !== null) CF[k] = v; });
@@ -1169,6 +1176,7 @@ function cFormHTML() {
   const f = `<div class="card"><div class="hd" style="margin-bottom:6px"><b>${CF.id ? "Edit tuntutan" : "Tuntutan baru"}</b></div>
   <div class="hr2"><select id="cf_type" data-f="c_type" style="font:inherit;color:var(--tx);background:var(--in);border:0;border-radius:8px;padding:8px">${C.set.types.map(x => `<option value="${x.id}" ${x.id === CF.type ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select><input type="date" id="cf_date" value="${esc(CF.date)}"></div>
   ${km ? `<div class="hr2"><input type="text" id="cf_from" placeholder="Dari (lokasi)" value="${esc(CF.from)}"><input type="text" id="cf_to" placeholder="Ke (lokasi)" value="${esc(CF.to)}"></div>
+  <div class="hr2"><label class="mut" style="flex:1">Kenderaan <select id="cf_veh" data-f="c_veh" style="font:inherit;color:var(--tx);background:var(--in);border:0;border-radius:8px;padding:8px;width:100%">${cVopts(CF.veh)}</select></label></div>
   <div class="cfg"><label class="mut">Odo mula <input type="number" id="cf_os" data-f="c_calc" value="${esc(CF.odoS)}"></label><label class="mut">Odo akhir <input type="number" id="cf_oe" data-f="c_calc" value="${esc(CF.odoE)}"></label><label class="mut">Jarak (km) <input type="number" step="0.1" id="cf_km" data-f="c_calc" value="${esc(CF.km)}"></label><label class="mut">Kadar RM/km <input type="number" step="0.01" id="cf_rate" data-f="c_calc" value="${esc(CF.rate)}"></label></div>
   <div class="mut" id="cf_calc"></div>` : `<div class="cfg one"><label class="mut">Amaun RM <input type="number" step="0.01" id="cf_amt" value="${esc(CF.amt)}"></label></div>`}
   <div class="hr2"><input type="text" id="cf_desc" placeholder="${km ? "Tujuan / catatan (tak wajib)" : "Butiran (cth: parking KLCC, meeting klien)"}" value="${esc(CF.desc)}"></div>
@@ -1186,7 +1194,8 @@ function cCalc(t) {
 }
 function cOpenForm(c) {
   CF = c ? JSON.parse(JSON.stringify(c)) : { id: null, type: C.set.types[0].id, date: CMON !== "all" && CMON !== nowYM() ? CMON + "-01" : today(), desc: "", amt: "", from: "", to: "", odoS: "", odoE: "", km: "", photos: [] };
-  if (CF.rate == null || CF.rate === "") CF.rate = C.set.rate;
+  if (!CF.veh) { const vv = cVeh().find(x => x.name === CF.vn); CF.veh = vv ? vv.id : cVeh()[0].id; }
+  if (CF.rate == null || CF.rate === "") CF.rate = cVr(CF.veh);
   CF.origPhotos = c ? (c.photos || []).slice() : [];
   const el = document.getElementById("cForm"); el.innerHTML = cFormHTML(); el.hidden = false; cThumbs(); cCalc();
 }
@@ -1202,7 +1211,7 @@ function cSaveForm() {
   else { amt = r2(num(CF.amt)); if (amt <= 0) return err.textContent = "Isi amaun."; }
   if (t.req && !CF.photos.length) return err.textContent = "Claim jenis " + t.name + " wajib ada gambar.";
   const c = { id: CF.id || uid(), ts: CF.ts || Date.now(), type: CF.type, date: CF.date, desc: (CF.desc || "").trim(), amt, photos: CF.photos.slice() };
-  if (km) Object.assign(c, { from: (CF.from || "").trim(), to: (CF.to || "").trim(), odoS: CF.odoS, odoE: CF.odoE, km: kmv, rate });
+  if (km) Object.assign(c, { from: (CF.from || "").trim(), to: (CF.to || "").trim(), odoS: CF.odoS, odoE: CF.odoE, km: kmv, rate, veh: CF.veh, vn: cVn(CF.veh) });
   const i = C.claims.findIndex(x => x.id === c.id);
   if (i >= 0) { C.claims[i] = c; } else C.claims.push(c);
   CF.origPhotos.filter(id => !c.photos.includes(id)).forEach(id => { idbDel(id); delete PH[id]; });
@@ -1223,7 +1232,6 @@ function cPdfHTML() {
   <table class="pt hd2"><tr><td><b>Nama</b></td><td>${esc(s.name) || "&nbsp;"}</td><td><b>Syarikat</b></td><td>${esc(s.co) || "&nbsp;"}</td></tr><tr><td><b>Jawatan / No. staf</b></td><td>${esc(s.pos) || "&nbsp;"}</td><td><b>Tempoh</b></td><td>${per}</td></tr></table>
   <table class="pt" style="margin-top:10px"><thead><tr><th style="width:28px">Bil</th><th style="width:70px">Tarikh</th><th style="width:70px">Jenis</th><th>Butiran</th><th style="width:50px">Lamp.</th><th style="width:80px">Amaun (RM)</th></tr></thead><tbody>${rows || `<tr><td colspan="6" class="c">Tiada tuntutan</td></tr>`}<tr><td colspan="5" class="r"><b>JUMLAH</b></td><td class="r"><b>${p2(tot)}</b></td></tr></tbody></table>
   ${byT ? `<table class="pt" style="margin-top:10px;width:55%"><thead><tr><th>Ringkasan jenis</th><th>Bil.</th><th>RM</th></tr></thead><tbody>${byT}</tbody></table>` : ""}
-  <div class="sig"><div>Disediakan oleh:<div class="ln"></div>${esc(s.name)}<br>Tarikh: ${dFmt(today())}</div><div>Disemak / Diluluskan oleh:<div class="ln"></div>Nama:<br>Tarikh:</div></div>
   ${atts.length ? `<div class="pb"></div><h2>LAMPIRAN</h2><div class="atts">${atts.map(a => `<figure><img src="${PH[a.id]}" alt=""><figcaption><b>Lampiran ${a.n}</b> · ${dFmt(a.c.date)} (${dDay(a.c.date)}) · ${esc(a.t.name)} · RM${p2(a.c.amt)}</figcaption></figure>`).join("")}</div>` : ""}`;
 }
 function cOpenPdf() {
@@ -1240,16 +1248,19 @@ function cAct(a, t) {
   if (a === "c_add") { cOpenForm(null); sfx("tick"); return; }
   if (a === "c_edit") { const c = C.claims.find(x => x.id === id); if (c) cOpenForm(c); sfx("tick"); return; }
   if (a === "c_cancel") { cCloseForm(true); return; }
-  if (a === "c_rate") { CRATE = true; cRender(); const e = document.getElementById("cr_val"); if (e) e.focus(); return; }
+  if (a === "c_rate") { CRATE = true; cRender(); const e = document.getElementById("cr_" + cVeh()[0].id); if (e) e.focus(); return; }
   if (a === "c_ratex") { CRATE = false; cRender(); return; }
+  if (a === "c_vadd") { cVeh().push({ id: uid(), name: "Kenderaan baru", rate: C.set.rate }); cRender(); return; }
+  if (a === "c_vdel") { const k = t.dataset.i; if (cVeh()[0].id === k) return; C.set.veh = cVeh().filter(x => x.id !== k); cRender(); return; }
   if (a === "c_ratesave" || a === "c_rateall") {
-    const e = document.getElementById("cr_val"), r = Math.max(0, num(e && e.value));
+    cVeh().forEach(v => { const e = document.getElementById("cr_" + v.id); if (e) v.rate = Math.max(0, num(e.value)); });
+    C.set.rate = cVeh()[0].rate;
     if (a === "c_rateall") {
-      const ks = cList().filter(c => ctp(c.type).kind === "km"); if (!ks.length) return alert("Tiada mileage dalam paparan ni.");
-      if (!confirm("Kira semula " + ks.length + " tuntutan mileage (" + (CMON === "all" ? "semua bulan" : ymLabel(CMON)) + ") guna " + fmt(r) + "/km?")) return;
-      ks.forEach(c => { c.rate = r; c.amt = r2(num(c.km) * r); });
+      const ks = cList().filter(c => ctp(c.type).kind === "km"); if (!ks.length) { alert("Tiada mileage dalam paparan ni."); return; }
+      if (!confirm("Kira semula " + ks.length + " tuntutan mileage (" + (CMON === "all" ? "semua bulan" : ymLabel(CMON)) + ") ikut kadar kenderaan sekarang?")) return;
+      ks.forEach(c => { const vv = (c.veh && cVeh().find(x => x.id === c.veh)) || cVeh().find(x => x.name === c.vn) || cVeh()[0]; c.veh = vv.id; c.vn = vv.name; c.rate = vv.rate; c.amt = r2(num(c.km) * vv.rate); });
     }
-    C.set.rate = r; CRATE = false; sfx("pay"); cRender(); return;
+    CRATE = false; sfx("pay"); cRender(); return;
   }
   if (a === "c_save") { cSaveForm(); return; }
   if (a === "c_rmph") { cReadForm(); CF.photos = CF.photos.filter(x => x !== t.dataset.ph); cThumbs(); return; }
@@ -1265,6 +1276,7 @@ function cAct(a, t) {
 }
 function cChange(t, f) {
   if (f === "c_mon") { CMON = t.value; cRender(); return; }
+  if (f === "c_veh") { cReadForm(); CF.veh = t.value; const re = document.getElementById("cf_rate"); if (re) { re.value = cVr(t.value); CF.rate = re.value; } cCalc(); return; }
   if (f === "c_type") { cReadForm(); CF.type = t.value; const el = document.getElementById("cForm"); el.innerHTML = cFormHTML(); cThumbs(); cCalc(); return; }
   if (f === "c_file") {
     const files = [...t.files]; cReadForm();
@@ -1273,7 +1285,8 @@ function cChange(t, f) {
   }
   const i = t.dataset.i, ty = C.set.types.find(x => x.id === i);
   if (f === "c_name") C.set.name = t.value; else if (f === "c_pos") C.set.pos = t.value; else if (f === "c_co") C.set.co = t.value;
-  else if (f === "c_rate") C.set.rate = Math.max(0, num(t.value));
+  else if (f === "c_vname") { const v = cVeh().find(x => x.id === i); if (v) v.name = t.value; }
+  else if (f === "c_vrate") { const v = cVeh().find(x => x.id === i); if (v) { v.rate = Math.max(0, num(t.value)); if (v.id === cVeh()[0].id) C.set.rate = v.rate; } }
   else if (f === "c_tname" && ty) ty.name = t.value; else if (f === "c_treq" && ty) ty.req = t.checked;
   cRender();
 }
@@ -1337,7 +1350,7 @@ function cDetailPlain(c) {
   const t = ctp(c.type), p = [];
   if (t.kind === "km") {
     p.push(`${c.from || "?"} -> ${c.to || "?"}`);
-    p.push(`${c.km || 0} km${c.odoS !== "" && c.odoS != null && c.odoE !== "" && c.odoE != null ? ` (odo ${c.odoS} -> ${c.odoE})` : ""} @ ${fmt(c.rate != null ? c.rate : C.set.rate)}/km`);
+    p.push(`${c.km || 0} km${c.odoS !== "" && c.odoS != null && c.odoE !== "" && c.odoE != null ? ` (odo ${c.odoS} -> ${c.odoE})` : ""} @ ${fmt(c.rate != null ? c.rate : C.set.rate)}/km${c.vn ? " - " + c.vn : ""}`);
   }
   if (c.desc) p.push(c.desc);
   return p;
@@ -1380,11 +1393,6 @@ async function cMakePdf() {
     ["Ringkasan jenis", "Bil.", "RM"].forEach((h, i) => { d.box(bx, y, bw[i], 16); d.text(bx + 4, y + 11.5, h, 9, true, "l"); bx += bw[i]; }); y += 16;
     byT.forEach(r => { bx = PGM; [r[0], String(r[1]), p2(r[2])].forEach((v, i) => { d.box(bx, y, bw[i], 16); d.text(i === 2 ? bx + bw[i] - 5 : bx + 4, y + 11.5, d.fit(v, bw[i] - 8, 9, false), 9, false, i === 2 ? "r" : "l"); bx += bw[i]; }); y += 16; });
   }
-  if (y + 110 > BOT) { d.page(); y = PGM; } else y += 28;
-  d.text(PGM, y, "Disediakan oleh:", 9, false, "l"); d.text(PGM + 270, y, "Disemak / Diluluskan oleh:", 9, false, "l");
-  d.line(PGM, y + 50, PGM + 220, y + 50); d.line(PGM + 270, y + 50, PGM + 490, y + 50);
-  d.text(PGM, y + 63, d.fit(s.name || "", 220, 9, false), 9, false, "l"); d.text(PGM, y + 75, "Tarikh: " + dFmt(today()), 9, false, "l");
-  d.text(PGM + 270, y + 63, "Nama:", 9, false, "l"); d.text(PGM + 270, y + 75, "Tarikh:", 9, false, "l");
   if (att.length) {
     d.page(); y = PGM; d.text(PGW / 2, y + 8, "LAMPIRAN", 14, true, "c"); y += 26;
     const gw = (TW - 14) / 2;
@@ -1531,6 +1539,9 @@ document.addEventListener("click", e => {
 });
 addEventListener("hashchange", route);
 document.addEventListener("input", e => { if (e.target.dataset.f === "c_calc") cCalc(e.target); });
+function qaCalc() { const k = document.getElementById("qa_km"), ve = document.getElementById("qa_veh"), el = document.getElementById("qa_calc"); if (!el || !ve) return; const r = cVr(ve.value), km = num(k && k.value); el.textContent = km > 0 ? "= " + fmt(km * r) + " (" + km + " km × " + fmt(r) + "/km)" : "Kadar " + fmt(r) + "/km"; }
+document.addEventListener("input", e => { if (e.target.id === "qa_km") qaCalc(); });
+document.addEventListener("change", e => { if (e.target.id === "qa_veh") qaCalc(); });
 updSnd(); render(); hRender(); cInit(); route();
 /* ===== Backup semua tool ===== */
 const BKT = "riztool_lastbk";
@@ -3990,7 +4001,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111490",NOTES=[{"v": "2026111490", "t": "Kemas paparan PC", "l": ["Bar atas di PC tak lagi menutup kad bila skrol", "Maklum balas terus ke WhatsApp, butang carian lebih jelas dan pilihan tema", "Fon Poppins disimpan dalam app, laporan graf dan carian global"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111491",NOTES=[{"v": "2026111491", "t": "Mileage ikut kenderaan, laporan claim tanpa tandatangan", "l": ["Mileage ada pilihan kenderaan: kereta, motosikal, lain-lain, setiap satu ada kadar sendiri", "Laporan claim tak lagi ada blok tandatangan, hanya jadual dan lampiran", "Bar atas PC dikemas dan maklum balas terus ke WhatsApp"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
