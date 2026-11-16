@@ -711,7 +711,7 @@ function addSheet(tab) {
     if (!ov._ph) ov._ph = []; if (!ov._ct || !C.set.types.some(x => x.id === ov._ct)) ov._ct = C.set.types[0].id; if (!ov._cd) ov._cd = today();
     const ct = ctp(ov._ct), isKm = ct.kind === "km";
     f = `<div class="qf"><select id="qa_type">${C.set.types.map(x => `<option value="${x.id}" ${x.id === ov._ct ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select><input type="date" id="qa_date" value="${esc(ov._cd)}">
-    ${isKm ? `<input type="text" id="qa_from" placeholder="Dari (lokasi)"><input type="text" id="qa_to" placeholder="Ke (lokasi)"><select id="qa_veh" aria-label="Kenderaan">${cVopts(ov._cv || cVeh()[0].id)}</select><input type="number" step="0.1" inputmode="decimal" id="qa_km" placeholder="Jarak (km)"><div class="mut" id="qa_calc">Kadar ${fmt(cVr(ov._cv || cVeh()[0].id))}/km</div>` : `<input type="number" step="0.01" inputmode="decimal" id="qa_amt" placeholder="Amaun (RM)">`}
+    ${isKm ? `<input type="text" id="qa_from" placeholder="Dari (lokasi)"><input type="text" id="qa_to" placeholder="Ke (lokasi)"><select id="qa_veh" aria-label="Kenderaan">${cVopts(ov._cv || cVeh()[0].id)}</select><input type="number" step="0.1" inputmode="decimal" id="qa_km" placeholder="Jarak (km)"><label class="mut" style="display:block">Kadar RM/km (boleh diubah) <input type="number" step="0.01" inputmode="decimal" id="qa_rate" value="${ov._cr != null ? esc(ov._cr) : cVr(ov._cv || cVeh()[0].id)}"></label><div class="mut" id="qa_calc">Kadar ${fmt(cVr(ov._cv || cVeh()[0].id))}/km</div>` : `<input type="number" step="0.01" inputmode="decimal" id="qa_amt" placeholder="Amaun (RM)">`}
     <input type="text" id="qa_desc" placeholder="${isKm ? "Tujuan / catatan (tak wajib)" : "Butiran (cth: parking KLCC)"}">
     <div class="mut">Gambar resit: <b>${ct.req ? "WAJIB" : "tak wajib"}</b> <span id="qa_ph">${ov._ph.length ? "· " + ov._ph.length + " gambar dipilih ✅" : ""}</span></div>
     <input type="file" id="qa_file" accept="image/*" multiple>
@@ -723,7 +723,8 @@ function addSheet(tab) {
     const t = e.target;
     if (t.id === "qa_type") { ov._ct = t.value; const d = document.getElementById("qa_date"); if (d) ov._cd = d.value; addSheet("claim"); }
     else if (t.id === "qa_date") ov._cd = t.value;
-    else if (t.id === "qa_veh") ov._cv = t.value;
+    else if (t.id === "qa_veh") { ov._cv = t.value; ov._cr = null; const re = document.getElementById("qa_rate"); if (re) re.value = cVr(t.value); }
+    else if (t.id === "qa_rate") ov._cr = t.value;
     else if (t.id === "qa_bd") ov._bd = t.value;
     else if (t.id === "qa_file" && t.files.length) {
       const ph = document.getElementById("qa_ph"); if (ph) ph.textContent = "· memproses gambar...";
@@ -738,11 +739,11 @@ function addSheet(tab) {
     if (k === "claim") {
       const t = ctp(ov._ct), isKm = t.kind === "km", date = v("qa_date"), bad = m => { const el = document.getElementById("qaMsg"); if (el) { el.textContent = m; el.style.color = "var(--bad)"; } };
       if (!date) return bad("Isi tarikh.");
-      let amt, kmv = 0;
-      if (isKm) { kmv = num(v("qa_km")); if (kmv <= 0) return bad("Isi jarak km."); amt = r2(kmv * cVr(v("qa_veh") || cVeh()[0].id)); } else { amt = r2(num(v("qa_amt"))); if (amt <= 0) return bad("Isi amaun."); }
+      let amt, kmv = 0, qrate = 0;
+      if (isKm) { kmv = num(v("qa_km")); if (kmv <= 0) return bad("Isi jarak km."); qrate = v("qa_rate") !== "" ? Math.max(0, num(v("qa_rate"))) : cVr(v("qa_veh") || cVeh()[0].id); amt = r2(kmv * qrate); } else { amt = r2(num(v("qa_amt"))); if (amt <= 0) return bad("Isi amaun."); }
       if (t.req && !ov._ph.length) return bad("Claim jenis " + t.name + " wajib ada gambar.");
       const c = { id: uid(), ts: Date.now(), type: t.id, date, desc: v("qa_desc").trim(), amt, photos: ov._ph.slice() };
-      if (isKm) Object.assign(c, { from: v("qa_from").trim(), to: v("qa_to").trim(), odoS: "", odoE: "", km: kmv, rate: cVr(v("qa_veh") || cVeh()[0].id), veh: v("qa_veh") || cVeh()[0].id, vn: cVn(v("qa_veh") || cVeh()[0].id) });
+      if (isKm) Object.assign(c, { from: v("qa_from").trim(), to: v("qa_to").trim(), odoS: "", odoE: "", km: kmv, rate: qrate, veh: v("qa_veh") || cVeh()[0].id, vn: cVn(v("qa_veh") || cVeh()[0].id) });
       C.claims.push(c); c.photos.forEach(id => idbPut(id, PH[id])); ov._ph = []; ov._cd = date;
       try { cRender(); } catch (er) {} sfx("pay"); ov.remove(); rzToast("Claim dicatat ✅ " + fmt(amt));
       return;
@@ -1539,9 +1540,9 @@ document.addEventListener("click", e => {
 });
 addEventListener("hashchange", route);
 document.addEventListener("input", e => { if (e.target.dataset.f === "c_calc") cCalc(e.target); });
-function qaCalc() { const k = document.getElementById("qa_km"), ve = document.getElementById("qa_veh"), el = document.getElementById("qa_calc"); if (!el || !ve) return; const r = cVr(ve.value), km = num(k && k.value); el.textContent = km > 0 ? "= " + fmt(km * r) + " (" + km + " km × " + fmt(r) + "/km)" : "Kadar " + fmt(r) + "/km"; }
-document.addEventListener("input", e => { if (e.target.id === "qa_km") qaCalc(); });
-document.addEventListener("change", e => { if (e.target.id === "qa_veh") qaCalc(); });
+function qaCalc() { const k = document.getElementById("qa_km"), ve = document.getElementById("qa_veh"), el = document.getElementById("qa_calc"), rr = document.getElementById("qa_rate"); if (!el || !ve) return; const r = rr && rr.value !== "" ? Math.max(0, num(rr.value)) : cVr(ve.value), km = num(k && k.value); el.textContent = km > 0 ? "= " + fmt(km * r) + " (" + km + " km × " + fmt(r) + "/km)" : "Kadar " + fmt(r) + "/km"; }
+document.addEventListener("input", e => { if (e.target.id === "qa_km" || e.target.id === "qa_rate") qaCalc(); });
+document.addEventListener("change", e => { if (e.target.id === "qa_veh") setTimeout(qaCalc, 0); });
 updSnd(); render(); hRender(); cInit(); route();
 /* ===== Backup semua tool ===== */
 const BKT = "riztool_lastbk";
@@ -4001,7 +4002,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111491",NOTES=[{"v": "2026111491", "t": "Mileage ikut kenderaan, laporan claim tanpa tandatangan", "l": ["Mileage ada pilihan kenderaan: kereta, motosikal, lain-lain, setiap satu ada kadar sendiri", "Laporan claim tak lagi ada blok tandatangan, hanya jadual dan lampiran", "Bar atas PC dikemas dan maklum balas terus ke WhatsApp"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111492",NOTES=[{"v": "2026111492", "t": "Kadar mileage boleh diubah", "l": ["Dalam Tambah cepat, kadar RM/km boleh diubah terus bagi setiap claim mileage", "Mileage ikut kenderaan: kereta, motosikal, lain-lain", "Laporan claim tak lagi ada blok tandatangan"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
