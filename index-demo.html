@@ -3431,6 +3431,8 @@ try { zRender(); } catch (e) { console.error(e); }
     const pwa = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
     return os + ", " + br + (pwa ? ", app dipasang" : ", dalam pelayar") + ", " + innerWidth + "x" + innerHeight;
   }
+  const scr = t => { const h = (location.hash || "").replace("#", ""); let a = h ? (h === "lang" ? "Langganan" : (() => { try { return ttl(h); } catch (e) { return h; } })()) : "Menu"; try { const p = document.querySelector(".rov.pg"); if (!h && p) a = p.id === "rzPanel" ? "Profil" : "Hari ni"; } catch (e) {} return a; };
+  const errs = () => { const a = (window.__rzErr || []).slice(-3); return a.length ? "\nRalat terakhir:\n- " + a.join("\n- ") : ""; };
   function problemSheet() {
     const cur = curTool(), opt = (v, t, sel) => `<option value="${esc(v)}" ${sel ? "selected" : ""}>${esc(t)}</option>`;
     const tools = NV.map(x => opt(x[0], ttl(x[0]), x[0] === cur)).join("") + opt("lang", "Langganan (dalam Bil Tertunggak)", cur === "lang");
@@ -3439,16 +3441,16 @@ try { zRender(); } catch (e) { console.error(e); }
 <label class="b7l">Jenis masalah<select id="b7y">${TYPES.map((t, i) => opt(t, t, i === 0)).join("")}</select></label>
 <label class="b7l">Apa yang berlaku?<textarea id="b7d" rows="5" maxlength="1000" placeholder="Contoh: bila tekan Simpan, tiada apa berlaku. Aku tekan dua kali pun sama."></textarea></label>
 <div class="mut" id="b7m" style="min-height:18px;margin:2px 2px 8px"></div>
-<div class="b7ft">Hanya apa yang kau tulis dan maklumat peranti ringkas dihantar. Tiada data kewangan kau. Lepas WhatsApp terbuka, kau boleh lampirkan tangkap skrin.</div>
-<div class="row" style="margin-top:12px"><button class="pri grow" id="b7go">Hantar ke @${WA_USER}</button><button id="b7cp">Salin</button></div>
-<button class="ghost" id="b7nm" style="width:100%;margin-top:8px;min-height:40px;font-size:13px;color:var(--mut)">WhatsApp tak terbuka? Guna nombor telefon</button>`);
+<div class="b7ft">Maklumat ringkas seperti tool, versi app, peranti dan ralat teknikal ditambah sendiri, jadi kau tak perlu taip semula. Tiada data kewangan kau dihantar. Lepas WhatsApp terbuka, kau boleh lampirkan tangkap skrin.</div>
+<div class="row" style="margin-top:12px"><button class="pri grow" id="b7go">Hantar ke WhatsApp</button><button id="b7cp">Salin</button></div>
+<button class="ghost" id="b7nm" style="width:100%;margin-top:8px;min-height:40px;font-size:13px;color:var(--mut)">Guna username @${WA_USER} (kalau dah aktif)</button>`);
     const tsel = ov.querySelector("#b7t"), build = () => {
       const t = tsel.value, tn = t === "" ? "Menu atau umum" : t === "__hari" ? "Hari ni" : t === "__profil" ? "Profil dan tetapan" : t === "lang" ? "Langganan" : ttl(t), d = ov.querySelector("#b7d").value.trim();
-      return "Maklum balas Uruzan (" + ver() + ")\n\nTool: " + tn + "\nJenis: " + ov.querySelector("#b7y").value + "\n\nMasalah:\n" + d + "\n\nPeranti: " + devInfo();
+      return "Maklum balas Uruzan (" + ver() + ")\n\nTool: " + tn + "\nJenis: " + ov.querySelector("#b7y").value + "\n\nMasalah:\n" + d + "\n\n--- Maklumat automatik ---\nSkrin: " + scr(t) + "\nPeranti: " + devInfo() + "\nTema: " + (document.documentElement.getAttribute("data-theme") || "ikut sistem") + ", bahasa: " + (document.documentElement.lang || "ms") + errs();
     }, ok = () => { const d = ov.querySelector("#b7d"), m = ov.querySelector("#b7m"); if (d.value.trim().length < 5) { m.textContent = "Tulis sikit apa yang berlaku (sekurang-kurangnya beberapa patah perkataan)."; m.style.color = "var(--bad)"; d.focus(); try { window.sfx && sfx("low"); } catch (e) {} return false; } m.textContent = ""; return true; };
     const copy = t => { try { if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {}); } catch (e) {} };
-    ov.querySelector("#b7go").onclick = () => { if (!ok()) return; const t = build(); copy(t); try { window.sfx && sfx("chime"); } catch (e) {} const m = ov.querySelector("#b7m"); m.textContent = "Mesej dah disalin. Kalau tak muncul dalam WhatsApp, tampal sahaja."; m.style.color = "var(--ok)"; window.open(waUser(t), "_blank", "noopener"); };
-    ov.querySelector("#b7nm").onclick = () => { if (!ok()) return; const t = build(); copy(t); window.open(waNum(t), "_blank", "noopener"); };
+    ov.querySelector("#b7go").onclick = () => { if (!ok()) return; const t = build(); copy(t); try { window.sfx && sfx("chime"); } catch (e) {} const m = ov.querySelector("#b7m"); m.textContent = "Mesej dah disalin. Kalau tak muncul dalam WhatsApp, tampal sahaja."; m.style.color = "var(--ok)"; window.open(waNum(t), "_blank", "noopener"); };
+    ov.querySelector("#b7nm").onclick = () => { if (!ok()) return; const t = build(); copy(t); window.open(waUser(t), "_blank", "noopener"); };
     ov.querySelector("#b7cp").onclick = () => { if (!ok()) return; const t = build(), m = ov.querySelector("#b7m"), done = () => { m.textContent = "Dah disalin. Tampal dalam WhatsApp."; m.style.color = "var(--ok)"; }; if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, () => { m.textContent = "Tak dapat salin."; }); else { const ta = ov.querySelector("#b7d"); ta.select(); try { document.execCommand("copy"); done(); } catch (e) {} } };
   }
   window.rzProblemOpen = problemSheet;
@@ -4448,10 +4450,16 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 })();
 </script>
 <script>
+/* ===== Simpan ralat terkini (tanpa data) untuk laporan masalah ===== */
+(function(){window.__rzErr=[];function add(m){try{m=String(m||"").replace(/\s+/g," ").slice(0,140);if(!m)return;var a=window.__rzErr;if(a[a.length-1]!==m)a.push(m);if(a.length>4)a.shift();}catch(e){}}
+window.addEventListener("error",function(e){add((e&&e.message)||"ralat");});
+window.addEventListener("unhandledrejection",function(e){add("Promise: "+((e&&e.reason&&(e.reason.message||e.reason))||""));});})();
+</script>
+<script>
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="20261117104",NOTES=[{"v": "20261117104", "t": "Maklum balas ke @uruzan", "l": ["Maklum balas dihantar ke username WhatsApp @uruzan", "Mesej disalin automatik, dan ada pilihan guna nombor telefon kalau pautan tak terbuka", "Bantuan dalam Profil pun buka borang lapor masalah yang sama"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="20261117105",NOTES=[{"v": "20261117105", "t": "Lapor masalah dengan konteks automatik", "l": ["Maklum balas dihantar ke WhatsApp melalui nombor telefon, username @uruzan jadi pilihan kedua", "Konteks ditambah automatik: skrin semasa, versi, peranti, tema, bahasa dan ralat teknikal terkini", "Pengguna hanya perlu tulis apa yang berlaku"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 var viaUpd=location.search.indexOf("v=")>=0;try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
