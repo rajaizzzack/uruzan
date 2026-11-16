@@ -3191,7 +3191,7 @@ try { zRender(); } catch (e) { console.error(e); }
 .b4s .sr .ic2{font-size:22px;width:34px;text-align:center}.b4s .sr .tx{flex:1;min-width:0}.b4s .sr .tx b,.b4s .sr .tx .mut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .b4s h4{margin:14px 0 2px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
 .vtag .vt1,.vtag .vt2{white-space:nowrap}
-#rzSrchFab{position:fixed;right:14px;bottom:calc(160px + env(safe-area-inset-bottom,0px));z-index:58;width:54px;height:54px;min-height:0;padding:0;border-radius:50%;border:0;background:var(--card,#fff);color:var(--tx);font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.25);transition:opacity .25s,transform .1s}
+#rzSrchFab{position:fixed;right:14px;bottom:calc(160px + env(safe-area-inset-bottom,0px));z-index:58;width:54px;height:54px;min-height:0;padding:0;border-radius:50%;border:0;background:linear-gradient(145deg,#38bdf8,#0369a1);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(3,105,161,.45);transition:opacity .25s,transform .1s}
 #rzSrchFab:active{transform:scale(.9)}body:has(#shareFab.sc) #rzSrchFab{opacity:.15;pointer-events:none}
 @media(min-width:900px){#rzSrchFab{display:none!important}.vtag .vt1,.vtag .vt2{display:block}.vtag .vts{display:none}}
 @media(max-width:899px){#nav .nvsrch{display:none!important}}`;
@@ -3285,7 +3285,7 @@ try { zRender(); } catch (e) { console.error(e); }
     const baj = document.querySelector('.tool.card[data-t="baj"]');
     if (baj && !document.querySelector('[data-b4open="rep"]')) baj.insertAdjacentHTML("afterend", '<button class="tool card" data-b4open="rep"><div class="big">📈</div><b>Laporan</b><div class="mut">Graf belanja bulanan dan tahunan</div></button><button class="tool card" data-b4open="srch"><div class="big">🔎</div><b>Carian</b><div class="mut">Cari dalam semua data</div></button>');
     const old = document.getElementById("rzSrchBtn"); if (old) old.remove();
-    if (!document.getElementById("rzSrchFab") && document.getElementById("shareFab")) document.body.insertAdjacentHTML("beforeend", '<button id="rzSrchFab" data-b4open="srch" aria-label="Carian" title="Carian">🔎</button>');
+    if (!document.getElementById("rzSrchFab") && document.getElementById("shareFab")) document.body.insertAdjacentHTML("beforeend", '<button id="rzSrchFab" data-b4open="srch" aria-label="Carian" title="Carian"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></button>');
     const pf = document.querySelector('#nav [data-act="nav_profile"]');
     if (pf && !document.querySelector("#nav .nvsrch")) pf.insertAdjacentHTML("beforebegin", '<button class="nvsrch" data-b4open="srch" aria-label="Carian"><b>🔎</b>Carian</button>');
   }
@@ -3990,7 +3990,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111487",NOTES=[{"v": "2026111487", "t": "Pilihan tema cerah atau gelap", "l": ["Dalam Profil, pilih tema: ikut sistem, cerah atau gelap", "Butang carian betul-betul atas Profil dan tag versi dikemas", "Fon Poppins disimpan dalam app, laporan graf dan carian global"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111488",NOTES=[{"v": "2026111488", "t": "Butang carian lebih jelas", "l": ["Butang carian kini biru terang dengan ikon kanta pembesar, mudah dilihat dalam mod gelap", "Pilihan tema cerah, gelap atau ikut sistem dalam Profil", "Fon Poppins disimpan dalam app, laporan graf dan carian global"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
