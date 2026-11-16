@@ -3353,23 +3353,30 @@ try { zRender(); } catch (e) { console.error(e); }
     const m = document.getElementById("cMain"); if (!m) return;
     const old = document.getElementById("b6box"); if (old) old.remove();
     const btn = m.querySelector("button.cadd"); if (!btn) return; const A = arch();
-    btn.insertAdjacentHTML("afterend", `<div id="b6box">${C.claims.length ? '<button data-b6="new" style="width:100%;margin-top:8px">📦 Dah claim? Arkib semua &amp; mula baru</button>' : ""}${A.length ? `<details class="acc" style="margin-top:10px"><summary>📦 Arkib tuntutan (${A.length})</summary><div class="accb">${A.slice().reverse().map(b => `<div class="hrow" data-b6="view" data-i="${b.id}" role="button" tabindex="0" style="cursor:pointer;padding:10px 0;border-top:1px solid var(--bd)"><div class="grow"><b>${esc(b.name)}</b><div class="mut">${b.claims.length} tuntutan · ${rng(b.claims)}</div></div><b>${fmt(tot(b.claims))}</b></div>`).join("")}</div></details>` : ""}</div>`);
+    btn.insertAdjacentHTML("afterend", `<div id="b6box">${C.claims.length ? '<button data-b6="new" style="width:100%;margin-top:8px">✅ Claim dah dibayar? Tutup &amp; mula claim baru</button>' : ""}${A.some(b => !b.paid) ? `<div class="card" style="margin-top:8px;border-color:#f59e0b"><b>⏳ Menunggu bayaran ${fmt(tot([].concat(...A.filter(b => !b.paid).map(b => b.claims))))}</b><div class="mut">${A.filter(b => !b.paid).length} claim dihantar, belum ditandakan dibayar. Buka Arkib untuk tandakan.</div></div>` : ""}${A.length ? `<details class="acc" style="margin-top:10px"><summary>📦 Claim lama (${A.length})</summary><div class="accb">${A.slice().reverse().map(b => `<div class="hrow" data-b6="view" data-i="${b.id}" role="button" tabindex="0" style="cursor:pointer;padding:10px 0;border-top:1px solid var(--bd)"><div class="grow"><b>${esc(b.name)}</b><div class="mut">${b.claims.length} tuntutan · ${rng(b.claims)}</div><div style="font-size:12px;margin-top:2px;color:${b.paid ? "var(--ok,#15803d)" : "#d97706"}">${b.paid ? "✅ Dibayar" + (b.paidAt ? " " + dFmt(b.paidAt) : "") : "⏳ Menunggu bayaran"}</div></div><b>${fmt(tot(b.claims))}</b></div>`).join("")}</div></details>` : ""}</div>`);
   }
   const _cR = cRender; cRender = function () { _cR.apply(this, arguments); try { paint(); } catch (e) { console.error(e); } };
   try { paint(); } catch (e) {}
   let rq6 = 0; new MutationObserver(() => { if (rq6) return; rq6 = requestAnimationFrame(() => { rq6 = 0; const m = document.getElementById("cMain"); if (m && m.querySelector("button.cadd") && !document.getElementById("b6box")) { try { paint(); } catch (e) { console.error(e); } } }); }).observe(document.body, { childList: true, subtree: true });
 
   function newArch() {
-    const ov = sheet(shHead("Arkib tuntutan") + `<div class="mut" style="margin-bottom:10px">Semua <b>${C.claims.length}</b> tuntutan (${fmt(tot(C.claims))}) dipindah ke arkib untuk rujukan, termasuk gambar. Senarai Claim jadi kosong supaya kau boleh mula baru. Boleh dipulihkan bila-bila masa.</div><input type="text" id="b6n" maxlength="60" value="Claim dihantar ${dFmt(today())}" aria-label="Nama arkib"><div class="row" style="margin-top:10px"><button class="pri grow" id="b6ok">📦 Arkibkan</button></div>`);
+    const L0 = C.claims, nm0 = "Claim " + rng(L0);
+    const ov = sheet(shHead("Tutup claim ni") + `<div class="mut" style="margin-bottom:10px">Semua <b>${L0.length}</b> tuntutan (${fmt(tot(L0))}) dipindah ke <b>Claim lama</b> untuk rujukan, termasuk gambar. Halaman Claim jadi kosong supaya kau boleh mula claim baru.</div>
+<input type="text" id="b6n" maxlength="60" value="${esc(nm0)}" aria-label="Nama claim">
+<div class="hr2" style="margin-top:8px"><select id="b6s" style="font:inherit;color:var(--tx);background:var(--in);border:0;border-radius:8px;padding:10px;width:100%"><option value="paid">✅ Dah dibayar</option><option value="wait">⏳ Dah dihantar, tunggu bayaran</option></select></div>
+<label class="mut" style="display:block;margin-top:8px"><span id="b6dl">Tarikh dibayar</span> <input type="date" id="b6d" value="${today()}"></label>
+<div class="row" style="margin-top:10px"><button class="pri grow" id="b6ok">Tutup &amp; mula baru</button></div>`);
+    const sel = ov.querySelector("#b6s"), dw = ov.querySelector("#b6d"), dl = ov.querySelector("#b6dl");
+    sel.onchange = () => { const p = sel.value === "paid"; dl.textContent = p ? "Tarikh dibayar" : "Tarikh dihantar"; };
     ov.querySelector("#b6ok").onclick = () => {
-      const n = ov.querySelector("#b6n").value.trim() || ("Claim " + dFmt(today()));
-      arch().push({ id: uid(), name: n, ts: Date.now(), at: today(), claims: C.claims }); C.claims = []; CMON = "all"; csave(); ov.remove(); cRender(); try { sfx("pay"); rzToast("Diarkibkan 📦 Mula baru"); } catch (e) {}
+      const n = ov.querySelector("#b6n").value.trim() || nm0, paid = sel.value === "paid";
+      arch().push({ id: uid(), name: n, ts: Date.now(), at: dw.value || today(), paid, paidAt: paid ? (dw.value || today()) : "", claims: C.claims }); C.claims = []; CMON = "all"; csave(); ov.remove(); cRender(); try { sfx("pay"); rzToast(paid ? "Claim ditutup ✅ Mula claim baru" : "Disimpan ⏳ Menunggu bayaran"); } catch (e) {}
     };
   }
   function view(id) {
     const b = arch().find(x => x.id === id); if (!b) return; curId = id;
     const L = b.claims.slice().sort((x, y) => x.date < y.date ? -1 : x.date > y.date ? 1 : 0);
-    sheet(shHead(esc(b.name)) + `<div class="mut" style="margin-bottom:6px">${L.length} tuntutan · ${rng(L)} · Jumlah <b>${fmt(tot(L))}</b></div>${L.map(c => { const t = ctp(c.type); return `<div class="hrow" style="padding:8px 0;border-top:1px solid var(--bd);align-items:flex-start"><div class="grow"><b>${esc(t.name)}</b> <span class="mut">${dFmt(c.date)}</span>${cDetail(c).map(x => `<div class="mut">${x}</div>`).join("")}${(c.photos || []).length ? `<div class="ths">${c.photos.map(p => PH[p] ? `<img class="th" src="${PH[p]}" alt="lampiran">` : "").join("")}</div>` : ""}</div><b>${fmt(c.amt)}</b></div>`; }).join("")}<div class="row" style="margin-top:12px"><button class="pri grow" data-b6="pdf">💾 Simpan PDF</button><button class="grow" data-b6="res">↩️ Pulihkan</button></div><div class="row"><button class="rbtn grow" data-b6="del">🗑️ Padam arkib</button></div>`);
+    sheet(shHead(esc(b.name)) + `<div class="mut" style="margin-bottom:6px">${L.length} tuntutan · ${rng(L)} · Jumlah <b>${fmt(tot(L))}</b></div><div style="margin-bottom:6px;font-weight:700;color:${b.paid ? "var(--ok,#15803d)" : "#d97706"}">${b.paid ? "✅ Dibayar" + (b.paidAt ? " pada " + dFmt(b.paidAt) : "") : "⏳ Menunggu bayaran"}</div>${L.map(c => { const t = ctp(c.type); return `<div class="hrow" style="padding:8px 0;border-top:1px solid var(--bd);align-items:flex-start"><div class="grow"><b>${esc(t.name)}</b> <span class="mut">${dFmt(c.date)}</span>${cDetail(c).map(x => `<div class="mut">${x}</div>`).join("")}${(c.photos || []).length ? `<div class="ths">${c.photos.map(p => PH[p] ? `<img class="th" src="${PH[p]}" alt="lampiran">` : "").join("")}</div>` : ""}</div><b>${fmt(c.amt)}</b></div>`; }).join("")}${b.paid ? "" : '<div class="row" style="margin-top:12px"><button class="pri grow" data-b6="paid">✅ Tandakan dah dibayar</button></div>'}<div class="row" style="margin-top:12px"><button class="grow" data-b6="pdf">💾 Simpan PDF</button><button class="grow" data-b6="res">↩️ Pulihkan</button></div><div class="row"><button class="rbtn grow" data-b6="del">🗑️ Padam arkib</button></div>`);
   }
   async function pdf(b) {
     const keep = C.claims, km = CMON; C.claims = b.claims; CMON = "all";
@@ -3383,6 +3390,7 @@ try { zRender(); } catch (e) { console.error(e); }
     if (!b) return;
     const ov = t.closest(".rov");
     if (a === "pdf") return pdf(b);
+    if (a === "paid") { b.paid = true; b.paidAt = today(); csave(); if (ov) ov.remove(); cRender(); try { sfx("pay"); rzToast("Ditandakan dah dibayar ✅"); } catch (er) {} return; }
     if (a === "res") { C.claims = C.claims.concat(b.claims); C.arch = arch().filter(x => x !== b); csave(); if (ov) ov.remove(); cRender(); try { rzToast("Dipulihkan ↩️ " + b.claims.length + " tuntutan"); } catch (er) {} return; }
     if (a === "del") {
       if (!confirm("Padam arkib \"" + b.name + "\" selama-lamanya, termasuk gambar? Tak boleh dipulihkan.")) return;
@@ -4057,7 +4065,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111494",NOTES=[{"v": "2026111494", "t": "Kadar mileage kira semula", "l": ["Lepas ubah kadar mileage, app tanya sama ada nak kira semula tuntutan mileage sedia ada", "Arkib tuntutan claim: simpan claim lama untuk rujukan dan mula baru", "Mileage ikut kenderaan dan kadar boleh diubah"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111495",NOTES=[{"v": "2026111495", "t": "Tutup claim dibayar, mula claim baru", "l": ["Claim dah dibayar? Tutup dan mula claim baru, yang lama kekal di Claim lama untuk rujukan", "Boleh tandakan dibayar atau menunggu bayaran, dan jumlah yang belum dibayar ditunjuk", "Lepas ubah kadar mileage, app tanya nak kira semula tuntutan sedia ada"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
