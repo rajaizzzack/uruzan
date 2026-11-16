@@ -2997,7 +2997,7 @@ try { zRender(); } catch (e) { console.error(e); }
 <li>Kami tak kumpul, tak jual dan tak hantar data kau ke mana-mana.</li>
 <li>Fon Poppins disimpan bersama app, jadi tiada hubungan ke pihak luar untuk memuatkannya.</li>
 <li>Kalau kau padam data pelayar atau tukar peranti tanpa backup, data hilang dan tak boleh dipulihkan. Buat backup selalu.</li></ul>`;
-  function feedback() { window.open("https://wa.me/?text=" + encodeURIComponent("Maklum balas Uruzan (" + VERS() + ")\n\n"), "_blank", "noopener"); }
+  function feedback() { window.open("https://wa.me/60176387664?text=" + encodeURIComponent("Maklum balas Uruzan (" + VERS() + ")\n\n"), "_blank", "noopener"); }
   function inject() {
     const dz = document.querySelector('#rzPanel details[data-s="dz"]'); if (!dz || document.querySelector('#rzPanel details[data-s="b2help"]')) return;
     dz.insertAdjacentHTML("beforebegin", `<details class="acc" data-s="b2help"><summary>ℹ️ Bantuan &amp; Tentang</summary><div class="accb"><div class="row" style="flex-direction:column;gap:8px"><button data-b2="guide">📖 Panduan ringkas</button><button data-b2="about">🛡️ Tentang &amp; privasi</button><button data-b2="fb">💬 Hantar maklum balas (WhatsApp)</button></div></div></details>`);
@@ -3951,7 +3951,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111488",NOTES=[{"v": "2026111488", "t": "Butang carian lebih jelas", "l": ["Butang carian kini biru terang dengan ikon kanta pembesar, mudah dilihat dalam mod gelap", "Pilihan tema cerah, gelap atau ikut sistem dalam Profil", "Fon Poppins disimpan dalam app, laporan graf dan carian global"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111489",NOTES=[{"v": "2026111489", "t": "Maklum balas terus ke WhatsApp", "l": ["Butang maklum balas dalam Profil kini terus buka WhatsApp pembangun", "Butang carian lebih jelas dan pilihan tema cerah atau gelap", "Fon Poppins disimpan dalam app, laporan graf dan carian global"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
