@@ -3155,7 +3155,7 @@ try { zRender(); } catch (e) { console.error(e); }
 #rzSrchFab{position:fixed;right:14px;bottom:calc(160px + env(safe-area-inset-bottom,0px));z-index:58;width:54px;height:54px;min-height:0;padding:0;border-radius:50%;border:0;background:linear-gradient(145deg,#38bdf8,#0369a1);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(3,105,161,.45);transition:opacity .25s,transform .1s}
 #rzSrchFab:active{transform:scale(.9)}body:has(#shareFab.sc) #rzSrchFab{opacity:.15;pointer-events:none}
 @media(min-width:900px){#rzSrchFab{display:none!important}.vtag .vt1,.vtag .vt2{display:block}.vtag .vts{display:none}}
-@media(max-width:899px){#nav .nvsrch{display:none!important}}`;
+@media(max-width:899px){#nav .nvsrch{display:none!important}}@media(min-width:900px){.top{position:relative!important;background:transparent!important}}`;
   document.head.appendChild(css);
 
   const bM = ym => zSum(zBelM(ym));
@@ -3951,7 +3951,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111489",NOTES=[{"v": "2026111489", "t": "Maklum balas terus ke WhatsApp", "l": ["Butang maklum balas dalam Profil kini terus buka WhatsApp pembangun", "Butang carian lebih jelas dan pilihan tema cerah atau gelap", "Fon Poppins disimpan dalam app, laporan graf dan carian global"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111490",NOTES=[{"v": "2026111490", "t": "Kemas paparan PC", "l": ["Bar atas di PC tak lagi menutup kad bila skrol", "Maklum balas terus ke WhatsApp, butang carian lebih jelas dan pilihan tema", "Fon Poppins disimpan dalam app, laporan graf dan carian global"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
