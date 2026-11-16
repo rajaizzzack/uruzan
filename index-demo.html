@@ -3052,7 +3052,7 @@ try { zRender(); } catch (e) { console.error(e); }
 <li>Kami tak kumpul, tak jual dan tak hantar data kau ke mana-mana.</li>
 <li>Fon Poppins disimpan bersama app, jadi tiada hubungan ke pihak luar untuk memuatkannya.</li>
 <li>Kalau kau padam data pelayar atau tukar peranti tanpa backup, data hilang dan tak boleh dipulihkan. Buat backup selalu.</li></ul>`;
-  function feedback() { window.open("https://wa.me/60176387664?text=" + encodeURIComponent("Maklum balas Uruzan (" + VERS() + ")\n\n"), "_blank", "noopener"); }
+  function feedback() { if (window.rzProblemOpen) return window.rzProblemOpen(); window.open("https://wa.me/60176387664?text=" + encodeURIComponent("Maklum balas Uruzan (" + VERS() + ")\n\n"), "_blank", "noopener"); }
   function inject() {
     const dz = document.querySelector('#rzPanel details[data-s="dz"]'); if (!dz || document.querySelector('#rzPanel details[data-s="b2help"]')) return;
     dz.insertAdjacentHTML("beforebegin", `<details class="acc" data-s="b2help"><summary>ℹ️ Bantuan &amp; Tentang</summary><div class="accb"><div class="row" style="flex-direction:column;gap:8px"><button data-b2="guide">📖 Panduan ringkas</button><button data-b2="about">🛡️ Tentang &amp; privasi</button><button data-b2="fb">💬 Hantar maklum balas (WhatsApp)</button></div></div></details>`);
@@ -3421,6 +3421,8 @@ try { zRender(); } catch (e) { console.error(e); }
   }
   inject(); setTimeout(inject, 1500);
   let rq = 0; new MutationObserver(() => { if (rq) return; rq = requestAnimationFrame(() => { rq = 0; inject(); }); }).observe(document.body, { childList: true, subtree: true });
+  const WA_USER = "uruzan", WA_NUM = "60176387664";
+  const waUser = t => "https://wa.me/@" + WA_USER + "?text=" + encodeURIComponent(t), waNum = t => "https://wa.me/" + WA_NUM + "?text=" + encodeURIComponent(t);
   const TYPES = ["Tak berfungsi atau ada ralat", "Paparan tak betul atau bertindih", "Kiraan atau data tak tepat", "Cadangan baru", "Lain-lain"];
   function curTool() { const h = (location.hash || "").replace("#", ""); try { if (h && NV.some(x => x[0] === h)) return h; if (h === "lang") return "lang"; } catch (e) {} return ""; }
   function devInfo() {
@@ -3438,14 +3440,18 @@ try { zRender(); } catch (e) { console.error(e); }
 <label class="b7l">Apa yang berlaku?<textarea id="b7d" rows="5" maxlength="1000" placeholder="Contoh: bila tekan Simpan, tiada apa berlaku. Aku tekan dua kali pun sama."></textarea></label>
 <div class="mut" id="b7m" style="min-height:18px;margin:2px 2px 8px"></div>
 <div class="b7ft">Hanya apa yang kau tulis dan maklumat peranti ringkas dihantar. Tiada data kewangan kau. Lepas WhatsApp terbuka, kau boleh lampirkan tangkap skrin.</div>
-<div class="row" style="margin-top:12px"><button class="pri grow" id="b7go">Hantar ke WhatsApp</button><button id="b7cp">Salin</button></div>`);
+<div class="row" style="margin-top:12px"><button class="pri grow" id="b7go">Hantar ke @${WA_USER}</button><button id="b7cp">Salin</button></div>
+<button class="ghost" id="b7nm" style="width:100%;margin-top:8px;min-height:40px;font-size:13px;color:var(--mut)">WhatsApp tak terbuka? Guna nombor telefon</button>`);
     const tsel = ov.querySelector("#b7t"), build = () => {
       const t = tsel.value, tn = t === "" ? "Menu atau umum" : t === "__hari" ? "Hari ni" : t === "__profil" ? "Profil dan tetapan" : t === "lang" ? "Langganan" : ttl(t), d = ov.querySelector("#b7d").value.trim();
       return "Maklum balas Uruzan (" + ver() + ")\n\nTool: " + tn + "\nJenis: " + ov.querySelector("#b7y").value + "\n\nMasalah:\n" + d + "\n\nPeranti: " + devInfo();
     }, ok = () => { const d = ov.querySelector("#b7d"), m = ov.querySelector("#b7m"); if (d.value.trim().length < 5) { m.textContent = "Tulis sikit apa yang berlaku (sekurang-kurangnya beberapa patah perkataan)."; m.style.color = "var(--bad)"; d.focus(); try { window.sfx && sfx("low"); } catch (e) {} return false; } m.textContent = ""; return true; };
-    ov.querySelector("#b7go").onclick = () => { if (!ok()) return; try { window.sfx && sfx("chime"); } catch (e) {} window.open("https://wa.me/60176387664?text=" + encodeURIComponent(build()), "_blank", "noopener"); };
+    const copy = t => { try { if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {}); } catch (e) {} };
+    ov.querySelector("#b7go").onclick = () => { if (!ok()) return; const t = build(); copy(t); try { window.sfx && sfx("chime"); } catch (e) {} const m = ov.querySelector("#b7m"); m.textContent = "Mesej dah disalin. Kalau tak muncul dalam WhatsApp, tampal sahaja."; m.style.color = "var(--ok)"; window.open(waUser(t), "_blank", "noopener"); };
+    ov.querySelector("#b7nm").onclick = () => { if (!ok()) return; const t = build(); copy(t); window.open(waNum(t), "_blank", "noopener"); };
     ov.querySelector("#b7cp").onclick = () => { if (!ok()) return; const t = build(), m = ov.querySelector("#b7m"), done = () => { m.textContent = "Dah disalin. Tampal dalam WhatsApp."; m.style.color = "var(--ok)"; }; if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, () => { m.textContent = "Tak dapat salin."; }); else { const ta = ov.querySelector("#b7d"); ta.select(); try { document.execCommand("copy"); done(); } catch (e) {} } };
   }
+  window.rzProblemOpen = problemSheet;
   document.addEventListener("click", e => {
     const b = e.target.closest && e.target.closest("#rzFb"); if (!b) return; e.stopImmediatePropagation(); e.preventDefault();
     try { window.sfx && sfx("tick"); } catch (er) {} problemSheet();
@@ -4445,7 +4451,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="20261117103",NOTES=[{"v": "20261117103", "t": "Lapor masalah dengan butiran", "l": ["Butang 'Ada masalah?' buka borang: pilih tool, jenis masalah dan tulis apa berlaku", "Mesej dihantar ke WhatsApp dengan versi app dan maklumat peranti ringkas", "Tool semasa dipilih secara automatik; tiada data kewangan dihantar"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="20261117104",NOTES=[{"v": "20261117104", "t": "Maklum balas ke @uruzan", "l": ["Maklum balas dihantar ke username WhatsApp @uruzan", "Mesej disalin automatik, dan ada pilihan guna nombor telefon kalau pautan tak terbuka", "Bantuan dalam Profil pun buka borang lapor masalah yang sama"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 var viaUpd=location.search.indexOf("v=")>=0;try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
