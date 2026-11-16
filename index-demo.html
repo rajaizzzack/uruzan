@@ -510,7 +510,6 @@ setTimeout(function(){d.classList.add("out");setTimeout(function(){d.remove();},
         <button class="tool card" data-act="open" data-t="kend"><div class="big">🚗</div><b>Servis Kenderaan</b><div class="mut">Minyak hitam, road tax, insurans</div></button>
     <button class="tool card" data-act="open" data-t="hut"><div class="big">🤝</div><b>Hutang Member</b><div class="mut">Siapa pinjam, berapa, dah bayar?</div></button>
     <button class="tool card" data-act="open" data-t="bel"><div class="big">💸</div><b>Belanja Harian</b><div class="mut">Duit keluar ikut bulan & kategori</div></button>
-    <button class="tool card" data-act="open" data-t="lang"><div class="big">📺</div><b>Langganan</b><div class="mut">Tarikh tolak & jumlah setahun</div></button>
     <button class="tool card" data-act="open" data-t="baj"><div class="big">📊</div><b>Total Bulanan</b><div class="mut">Gaji bersih tolak bil, rumah, langganan</div></button>
     <button class="tool card" data-act="open" data-t="sim"><div class="big">🎯</div><b>Sasaran Simpanan</b><div class="mut">Kumpul duit untuk impian</div></button>
     <button class="tool card" data-act="open" data-t="spl"><div class="big">🍽️</div><b>Split Bill</b><div class="mut">Bahagi bil dengan kawan</div></button>
@@ -757,7 +756,7 @@ function addSheet(tab) {
 }
 function moreSheet() {
   const it = (t, ic, d) => `<button class="tool card" data-act="open" data-t="${t}" data-x="1" style="width:100%;text-align:left;margin:0 0 8px;display:flex;gap:12px;align-items:center"><span class="big" style="margin:0">${ic}</span><span><b>${esc(ttl(t))}</b><div class="mut">${d}</div></span></button>`;
-  sheet(shHead("Tool lain") + it("kend", "🚗", "Servis, road tax & insurans, lesen") + it("hut", "🤝", "Siapa pinjam duit") + it("bel", "💸", "Catat belanja harian") + it("lang", "📺", "Netflix, Spotify dll") + it("baj", "📊", "Gaji bersih tolak komitmen bulan ni") + it("sim", "🎯", "Kumpul duit untuk impian") + it("spl", "🍽️", "Bahagi bil dengan kawan") + it("kal", "🧮", "Gaji bersih, ansuran, zakat") + it("inv", "🧾", "Kerja sampingan & PDF invois") + it("mny", "⛽", "km/L dan kos sekilometer") + it("war", "🛡️", "Simpan resit, ingatan waranti") + it("tkh", "📅", "Hari jadi, pasport, cukai") + it("nota", "📝", "Senarai belian, nota pantas") + it("ot", "⏱️", "Kira OT, baki cuti") + it("inc", "💵", "Grab, upah, jualan, duit belanja"));
+  sheet(shHead("Tool lain") + it("kend", "🚗", "Servis, road tax & insurans, lesen") + it("hut", "🤝", "Siapa pinjam duit") + it("bel", "💸", "Catat belanja harian") + it("baj", "📊", "Gaji bersih tolak komitmen bulan ni") + it("sim", "🎯", "Kumpul duit untuk impian") + it("spl", "🍽️", "Bahagi bil dengan kawan") + it("kal", "🧮", "Gaji bersih, ansuran, zakat") + it("inv", "🧾", "Kerja sampingan & PDF invois") + it("mny", "⛽", "km/L dan kos sekilometer") + it("war", "🛡️", "Simpan resit, ingatan waranti") + it("tkh", "📅", "Hari jadi, pasport, cukai") + it("nota", "📝", "Senarai belian, nota pantas") + it("ot", "⏱️", "Kira OT, baki cuti") + it("inc", "💵", "Grab, upah, jualan, duit belanja"));
 }
 function shareSheet() {
   sheet(shHead("Kongsi app") + '<div class="mut" style="margin-bottom:10px">Hantar link Uruzan kepada kawan.</div><div class="row"><button class="pri grow" data-act="sh_wa">WhatsApp</button><button data-act="sh_native">Lain-lain</button><button data-act="sh_copy">Salin link</button></div><div class="mut" id="shMsg" style="min-height:18px"></div>');
@@ -1104,7 +1103,7 @@ function cVeh() { const st = C.set; if (!Array.isArray(st.veh) || !st.veh.length
 const cVr = id => { const v = cVeh().find(x => x.id === id); return v ? (+v.rate || 0) : C.set.rate; };
 const cVn = id => { const v = cVeh().find(x => x.id === id); return v ? v.name : ""; };
 const cVopts = sel => cVeh().map(v => `<option value="${v.id}" ${v.id === sel ? "selected" : ""}>${esc(v.name)} (${fmt(v.rate)}/km)</option>`).join("");
-let C, CF = null, CMON = "all", CSET = false, CRATE = false, CLOPEN = true, CCOL = {};
+let C, CF = null, CMON = nowYM(), CSET = false, CRATE = false, CLOPEN = true, CCOL = {};
 const PH = {}; let DB = null;
 try { C = JSON.parse(localStorage.getItem(CK)); } catch (e) { C = null; }
 if (!C || !C.set || !Array.isArray(C.claims)) C = cdef();
@@ -1766,7 +1765,7 @@ function zHut() {
 /* ---- Belanja Harian ---- */
 const zBelM = m => Z.bel.filter(e => e.date.slice(0, 7) === m);
 const zSum = L => L.reduce((a, e) => a + (+e.amt || 0), 0);
-const ZINC = [["grab", "🚗", "Grab / e-hailing"], ["hantar", "🛵", "Hantar makanan / barang"], ["jual", "🛍️", "Jualan / niaga"], ["upah", "🔧", "Upah / freelance"], ["diberi", "💝", "Duit belanja diberi"], ["bonus", "🎁", "Bonus / hadiah"], ["lain", "➕", "Lain-lain"]];
+const ZINC = [["grab", "🚗", "Grab"], ["hantar", "🛵", "Hantar makanan / barang"], ["jual", "🛍️", "Jualan / niaga"], ["upah", "🔧", "Upah / freelance"], ["diberi", "💝", "Duit belanja diberi"], ["bonus", "🎁", "Bonus / hadiah"], ["lain", "➕", "Lain-lain"]];
 const zIncNet = e => r2((+e.amt || 0) - (+e.cost || 0));
 const zIncCs = e => { const d = e.cd || {}, l = e.lk || {}; return r2((l.m && (Z.fuel || []).some(f => f.inc === e.id) ? +d.m || 0 : 0) + (l.t && Z.kv.some(v => (v.log || []).some(x => x.inc === e.id)) ? +d.t || 0 : 0) + (l.f && (Z.bel || []).some(b => b.inc === e.id) ? +d.f || 0 : 0)); };
 const zIncM = ym => r2((Z.inc || []).filter(e => e.date.slice(0, 7) === ym).reduce((a, e) => a + zIncNet(e) + zIncCs(e), 0));
@@ -2418,8 +2417,8 @@ document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.da
 document.addEventListener("toggle", e => { const d = e.target; if (d.dataset && d.dataset.nd) { if (d.open) nInvOpen.add(d.dataset.nd); else nInvOpen.delete(d.dataset.nd); } }, true);
 
 /* ---------- Pilih tool yang nak dipaparkan ---------- */
-const NV = [["sewa","🏠"],["bil","💳"],["claim","🧾"],["kend","🚗"],["hut","🤝"],["bel","💸"],["lang","📺"],["baj","📊"],["sim","🎯"],["spl","🍽️"],["kal","🧮"],["inv","🧾"],["mny","⛽"],["war","🛡️"],["tkh","📅"],["nota","📝"],["ot","⏱️"],["inc","💵"]];
-const nOn = k => (Z.vis && Z.vis.on || []).includes(k);
+const NV = [["sewa","🏠"],["bil","💳"],["claim","🧾"],["kend","🚗"],["hut","🤝"],["bel","💸"],["baj","📊"],["sim","🎯"],["spl","🍽️"],["kal","🧮"],["inv","🧾"],["mny","⛽"],["war","🛡️"],["tkh","📅"],["nota","📝"],["ot","⏱️"],["inc","💵"]];
+const nOn = k => k !== "lang" && (Z.vis && Z.vis.on || []).includes(k);
 function nVisFix() { if (!Z.vis || !Array.isArray(Z.vis.on) || Z.vis.on.length < 3) Z.vis = { on: ["sewa","bil","claim","kend","hut","bel","lang","baj"] }; }
 const _zF2 = zFix; zFix = function () { _zF2(); nVisFix(); }; nVisFix();
 function nApplyVis() { nVisFix(); document.querySelectorAll("#home .tool[data-t],#navTools .tool[data-t]").forEach(b => { b.style.display = nOn(b.dataset.t) ? "" : "none"; }); const n = NV.filter(x => nOn(x[0])).length; const b = document.getElementById("addTools"); if (b) b.querySelector(".mut").textContent = n ? n + " tool dipaparkan, tekan untuk ubah" : "Pilih tool yang anda nak"; }
@@ -2652,7 +2651,7 @@ try { zRender(); } catch (e) { console.error(e); }
 /* ---------- Platform rider + laporan PDF pendapatan ---------- */
 (function () {
   /* senarai platform: kunci lama (grab, hantar, jual, upah, diberi, bonus, lain) dikekalkan supaya rekod lama tak hilang */
-  const L = [["grab", "🚗", "Grab / e-hailing"], ["foodpanda", "🐼", "Foodpanda"], ["lalamove", "🚚", "Lalamove"], ["shopeefood", "🧡", "ShopeeFood"], ["misi", "🛵", "Misi"], ["hantar", "🏍️", "Rider lain (tak rasmi)"], ["jual", "🛍️", "Jualan / niaga"], ["upah", "🔧", "Upah / freelance"], ["diberi", "💝", "Duit belanja diberi"], ["bonus", "🎁", "Bonus / hadiah"], ["lain", "➕", "Lain-lain"]];
+  const L = [["grab", "🚗", "Grab"], ["foodpanda", "🐼", "Foodpanda"], ["lalamove", "🚚", "Lalamove"], ["shopeefood", "🧡", "ShopeeFood"], ["misi", "🛵", "Misi"], ["hantar", "🏍️", "Rider lain (tak rasmi)"], ["jual", "🛍️", "Jualan / niaga"], ["upah", "🔧", "Upah / freelance"], ["diberi", "💝", "Duit belanja diberi"], ["bonus", "🎁", "Bonus / hadiah"], ["lain", "➕", "Lain-lain"]];
   ZINC.length = 0; L.forEach(x => ZINC.push(x));
   const pl = k => nZi(k)[2];
   const rng = () => { const s = nRgState(), r = nRgRange(s.m, s.a); return { s, r, lab: nRgLabel(s.m, r) }; };
@@ -3042,7 +3041,7 @@ try { zRender(); } catch (e) { console.error(e); }
   const GUIDE = `<h3>📖 Panduan ringkas</h3><ol>
 <li><b>Catat cepat:</b> tekan butang <b>＋</b> di tengah bawah. Pilih Belanja, Hutang, Claim atau Pendapatan, isi, kemudian Catat.</li>
 <li><b>Hari ni:</b> ringkasan hari ini dan baki bulan. <b>Profil:</b> nama, avatar, bunyi, backup dan tetapan.</li>
-<li><b>Alat lain:</b> sewa rumah, bil tertunggak, claim kerja, kenderaan, hutang, laporan dan carian di Menu.</li>
+<li><b>Alat lain:</b> sewa rumah, bil tertunggak, claim kerja, kenderaan, hutang, laporan di Menu. Carian guna butang 🔎 bulat di kanan bawah.</li>
 <li><b>Bajet dan belanja berulang:</b> dalam Belanja Harian, tetapkan had setiap kategori dan belanja yang berulang tiap bulan.</li>
 <li><b>Backup:</b> Profil → Backup data → <i>Simpan ke peranti</i>. Buat selalu, sebab data hanya ada dalam peranti ni.</li>
 <li><b>Tukar telefon:</b> backup di telefon lama, kemudian di telefon baru buka Uruzan dan <i>Pulihkan</i> fail tu.</li>
@@ -3300,7 +3299,7 @@ try { zRender(); } catch (e) { console.error(e); }
   /* ---------- pintu masuk ---------- */
   function inject() {
     const baj = document.querySelector('.tool.card[data-t="baj"]');
-    if (baj && !document.querySelector('[data-b4open="rep"]')) baj.insertAdjacentHTML("afterend", '<button class="tool card" data-b4open="rep"><div class="big">📈</div><b>Laporan</b><div class="mut">Graf belanja bulanan dan tahunan</div></button><button class="tool card" data-b4open="srch"><div class="big">🔎</div><b>Carian</b><div class="mut">Cari dalam semua data</div></button>');
+    if (baj && !document.querySelector('[data-b4open="rep"]')) baj.insertAdjacentHTML("afterend", '<button class="tool card" data-b4open="rep"><div class="big">📈</div><b>Laporan</b><div class="mut">Graf belanja bulanan dan tahunan</div></button>');
     const old = document.getElementById("rzSrchBtn"); if (old) old.remove();
     if (!document.getElementById("rzSrchFab") && document.getElementById("shareFab")) document.body.insertAdjacentHTML("beforeend", '<button id="rzSrchFab" data-b4open="srch" aria-label="Carian" title="Carian"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></button>');
     const pf = document.querySelector('#nav [data-act="nav_profile"]');
@@ -3353,7 +3352,7 @@ try { zRender(); } catch (e) { console.error(e); }
     const m = document.getElementById("cMain"); if (!m) return;
     const old = document.getElementById("b6box"); if (old) old.remove();
     const btn = m.querySelector("button.cadd"); if (!btn) return; const A = arch();
-    btn.insertAdjacentHTML("afterend", `<div id="b6box">${C.claims.length ? '<button data-b6="new" style="width:100%;margin-top:8px">✅ Claim dah dibayar? Tutup &amp; mula claim baru</button>' : ""}${A.some(b => !b.paid) ? `<div class="card" style="margin-top:8px;border-color:#f59e0b"><b>⏳ Menunggu bayaran ${fmt(tot([].concat(...A.filter(b => !b.paid).map(b => b.claims))))}</b><div class="mut">${A.filter(b => !b.paid).length} claim dihantar, belum ditandakan dibayar. Buka Arkib untuk tandakan.</div></div>` : ""}${A.length ? `<details class="acc" style="margin-top:10px"><summary>📦 Claim lama (${A.length})</summary><div class="accb">${A.slice().reverse().map(b => `<div class="hrow" data-b6="view" data-i="${b.id}" role="button" tabindex="0" style="cursor:pointer;padding:10px 0;border-top:1px solid var(--bd)"><div class="grow"><b>${esc(b.name)}</b><div class="mut">${b.claims.length} tuntutan · ${rng(b.claims)}</div><div style="font-size:12px;margin-top:2px;color:${b.paid ? "var(--ok,#15803d)" : "#d97706"}">${b.paid ? "✅ Dibayar" + (b.paidAt ? " " + dFmt(b.paidAt) : "") : "⏳ Menunggu bayaran"}</div></div><b>${fmt(tot(b.claims))}</b></div>`).join("")}</div></details>` : ""}</div>`);
+    btn.insertAdjacentHTML("afterend", `<div id="b6box">${C.claims.length ? '<button data-b6="new" style="width:100%;margin-top:10px;min-height:56px;border:0;border-radius:14px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;font-weight:800;font-size:16px;line-height:1.25;box-shadow:0 6px 16px rgba(21,128,61,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">✅ Claim dah dibayar?<span style="font-weight:600;font-size:13px;opacity:.95">Tutup &amp; mula claim baru</span></button>' : ""}${A.some(b => !b.paid) ? `<div class="card" style="margin-top:8px;border-color:#f59e0b"><b>⏳ Menunggu bayaran ${fmt(tot([].concat(...A.filter(b => !b.paid).map(b => b.claims))))}</b><div class="mut">${A.filter(b => !b.paid).length} claim dihantar, belum ditandakan dibayar. Buka Arkib untuk tandakan.</div></div>` : ""}${A.length ? `<details class="acc" style="margin-top:10px"><summary>📦 Claim lama (${A.length})</summary><div class="accb">${A.slice().reverse().map(b => `<div class="hrow" data-b6="view" data-i="${b.id}" role="button" tabindex="0" style="cursor:pointer;padding:10px 0;border-top:1px solid var(--bd)"><div class="grow"><b>${esc(b.name)}</b><div class="mut">${b.claims.length} tuntutan · ${rng(b.claims)}</div><div style="font-size:12px;margin-top:2px;color:${b.paid ? "var(--ok,#15803d)" : "#d97706"}">${b.paid ? "✅ Dibayar" + (b.paidAt ? " " + dFmt(b.paidAt) : "") : "⏳ Menunggu bayaran"}</div></div><b>${fmt(tot(b.claims))}</b></div>`).join("")}</div></details>` : ""}</div>`);
   }
   const _cR = cRender; cRender = function () { _cR.apply(this, arguments); try { paint(); } catch (e) { console.error(e); } };
   try { paint(); } catch (e) {}
@@ -3370,7 +3369,7 @@ try { zRender(); } catch (e) { console.error(e); }
     sel.onchange = () => { const p = sel.value === "paid"; dl.textContent = p ? "Tarikh dibayar" : "Tarikh dihantar"; };
     ov.querySelector("#b6ok").onclick = () => {
       const n = ov.querySelector("#b6n").value.trim() || nm0, paid = sel.value === "paid";
-      arch().push({ id: uid(), name: n, ts: Date.now(), at: dw.value || today(), paid, paidAt: paid ? (dw.value || today()) : "", claims: C.claims }); C.claims = []; CMON = "all"; csave(); ov.remove(); cRender(); try { sfx("pay"); rzToast(paid ? "Claim ditutup ✅ Mula claim baru" : "Disimpan ⏳ Menunggu bayaran"); } catch (e) {}
+      arch().push({ id: uid(), name: n, ts: Date.now(), at: dw.value || today(), paid, paidAt: paid ? (dw.value || today()) : "", claims: C.claims }); C.claims = []; CMON = nowYM(); csave(); ov.remove(); cRender(); try { sfx("pay"); rzToast(paid ? "Claim ditutup ✅ Mula claim baru" : "Disimpan ⏳ Menunggu bayaran"); } catch (e) {}
     };
   }
   function view(id) {
@@ -3396,6 +3395,32 @@ try { zRender(); } catch (e) { console.error(e); }
       if (!confirm("Padam arkib \"" + b.name + "\" selama-lamanya, termasuk gambar? Tak boleh dipulihkan.")) return;
       b.claims.forEach(c => (c.photos || []).forEach(p => { try { idbDel(p); } catch (er) {} delete PH[p]; })); C.arch = arch().filter(x => x !== b); csave(); if (ov) ov.remove(); cRender();
     }
+  }, true);
+})();
+</script>
+<script type="text/rz-app">
+/* ---------- Butang maklum balas terapung + Langganan dalam Bil Tertunggak ---------- */
+(function () {
+  if (window.__rzB7) return; window.__rzB7 = 1;
+  const css = document.createElement("style");
+  css.textContent = `#rzFb{position:fixed;right:14px;bottom:calc(99px + env(safe-area-inset-bottom,0px));z-index:58;height:40px;min-height:0;padding:0 14px;border:0;border-radius:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font:700 13px/1 system-ui,sans-serif;box-shadow:0 6px 16px rgba(217,119,6,.4);display:flex;align-items:center;gap:6px;white-space:nowrap;transition:opacity .25s,transform .1s}
+#rzFb:active{transform:scale(.95)}body:has(#home:not([hidden])) #rzFb{right:78px}body:has(#shareFab.sc) #rzFb{opacity:.15;pointer-events:none}
+@media(min-width:900px){#rzFb{right:96px;bottom:31px}body:has(#home[hidden]) #rzFb{right:28px;bottom:24px}}
+@media print{#rzFb{display:none!important}}
+#b7lang{width:100%;margin:8px 0;text-align:left;display:flex;gap:12px;align-items:center}#b7lang .big{margin:0;font-size:26px}`;
+  document.head.appendChild(css);
+  const ver = () => { try { return "v1." + Number(String(window.RZUPD.ver).slice(8)); } catch (e) { return ""; } };
+  function inject() {
+    if (!document.getElementById("rzFb") && document.getElementById("shareFab")) document.body.insertAdjacentHTML("beforeend", '<button id="rzFb" aria-label="Maklum balas" title="Maklum balas"><span aria-hidden="true">💬</span>Ada masalah?</button>');
+    const hm = document.getElementById("hMain");
+    if (hm && !document.getElementById("b7lang")) hm.insertAdjacentHTML("afterend", '<button class="card" id="b7lang" data-act="open" data-t="lang"><span class="big">📺</span><span><b>Langganan</b><div class="mut">Netflix, Spotify dll: tarikh tolak &amp; jumlah setahun</div></span></button>');
+  }
+  inject(); setTimeout(inject, 1500);
+  let rq = 0; new MutationObserver(() => { if (rq) return; rq = requestAnimationFrame(() => { rq = 0; inject(); }); }).observe(document.body, { childList: true, subtree: true });
+  document.addEventListener("click", e => {
+    const b = e.target.closest && e.target.closest("#rzFb"); if (!b) return; e.stopImmediatePropagation(); e.preventDefault();
+    try { window.sfx && sfx("tick"); } catch (er) {}
+    window.open("https://wa.me/60176387664?text=" + encodeURIComponent("Maklum balas Uruzan (" + ver() + ")\n\n"), "_blank", "noopener");
   }, true);
 })();
 </script>
@@ -4065,9 +4090,9 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="2026111495",NOTES=[{"v": "2026111495", "t": "Tutup claim dibayar, mula claim baru", "l": ["Claim dah dibayar? Tutup dan mula claim baru, yang lama kekal di Claim lama untuk rujukan", "Boleh tandakan dibayar atau menunggu bayaran, dan jumlah yang belum dibayar ditunjuk", "Lepas ubah kadar mileage, app tanya nak kira semula tuntutan sedia ada"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="2026111497",NOTES=[{"v": "2026111497", "t": "Maklum balas, Langganan dan claim lebih mudah", "l": ["Butang 'Ada masalah?' di sebelah butang kongsi untuk hantar maklum balas", "Langganan dipindah ke dalam Bil Tertunggak, Carian keluar dari senarai tool", "Claim: bulan semasa jadi paparan asal, butang tutup claim dibayar lebih jelas", "Pendapatan: Grab / e-hailing ditukar kepada Grab"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
-try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
+var viaUpd=location.search.indexOf("v=")>=0;try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 function css(){
   if(document.getElementById("updCss"))return;
@@ -4102,6 +4127,9 @@ function apply(v){
   setTimeout(function(){location.replace(location.pathname+"?v="+encodeURIComponent(v));},900);
 }
 function show(v){
+  /* baru lepas kemas kini tapi laman masih versi lama: jangan ulang, elak popup berulang */
+  if(ls.g("rz_stale")===String(v))return;
+  if(viaUpd){ls.s("rz_stale",String(v));return;}
   var tr=ls.g("rz_tried");if(tr){var q=tr.split("|");if(q[0]===String(v)&&Date.now()-Number(q[1])<1800000)return;}
   pend=v;
   /* masa selamat: baru dibuka dan belum disentuh, atau baru kembali dari latar belakang */
