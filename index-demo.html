@@ -3593,7 +3593,7 @@ try { zRender(); } catch (e) { console.error(e); }
 (function () {
   if (window.__rzB9) return; window.__rzB9 = 1;
   const css = document.createElement("style");
-  css.textContent = `.rov:not(.pg){-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);background:rgba(8,12,18,.42)}
+  css.textContent = `.rov:not(.pg){background:rgba(8,12,18,.5)}
 .rov.swp:not(.pg)>.rbox{border-radius:26px 26px 0 0!important;padding:10px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -14px 44px rgba(0,0,0,.2);animation:b9up .42s cubic-bezier(.2,.9,.25,1) both}
 .rov.swp:not(.pg){animation:rvin .22s ease both}
 @media(min-width:900px){.rov.swp:not(.pg){align-items:center!important}.rov.swp:not(.pg)>.rbox{border-radius:22px!important;animation:b9pc .3s cubic-bezier(.2,.9,.25,1) both}}
@@ -4459,7 +4459,7 @@ window.addEventListener("unhandledrejection",function(e){add("Promise: "+((e&&e.
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="20261117105",NOTES=[{"v": "20261117105", "t": "Lapor masalah dengan konteks automatik", "l": ["Maklum balas dihantar ke WhatsApp melalui nombor telefon, username @uruzan jadi pilihan kedua", "Konteks ditambah automatik: skrin semasa, versi, peranti, tema, bahasa dan ralat teknikal terkini", "Pengguna hanya perlu tulis apa yang berlaku"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="20261117106",NOTES=[{"v": "20261117106", "t": "Tiada skrin putih bila kembali ke app", "l": ["Kemas kini automatik hanya semasa app baru dibuka", "Bila kembali dari WhatsApp atau PDF, app tak muat semula; tunjuk bar 'Kemas kini' sahaja", "Latar pop up tak lagi guna kabur, lebih stabil pada Android"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 var viaUpd=location.search.indexOf("v=")>=0;try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
@@ -4501,11 +4501,19 @@ function show(v){
   if(viaUpd){ls.s("rz_stale",String(v));return;}
   var tr=ls.g("rz_tried");if(tr){var q=tr.split("|");if(q[0]===String(v)&&Date.now()-Number(q[1])<1800000)return;}
   pend=v;
-  /* masa selamat: baru dibuka dan belum disentuh, atau baru kembali dari latar belakang */
-  if(!typing()&&Date.now()-touched>15000&&!document.querySelector(".rov")){apply(v);}
+  /* kemas kini automatik HANYA masa app baru dibuka. Bila kembali dari WhatsApp, PDF atau app lain, jangan muat semula (elak skrin putih), tunjuk bar sahaja. */
+  var startup=(window.performance&&performance.now?performance.now():99999)<20000;
+  if(startup&&!typing()&&!document.querySelector(".rov")&&!document.querySelector("#pdfView.on")){apply(v);}
+  else bar(v);
 }
-document.addEventListener("visibilitychange",function(){if(!document.hidden&&pend&&!typing())setTimeout(function(){if(pend&&!typing())apply(pend);},700);});
-setInterval(function(){if(pend&&!document.hidden&&!typing()&&Date.now()-touched>60000&&!document.querySelector(".rov"))apply(pend);},30000);
+var dismissed="";
+function bar(v){
+  if(dismissed===String(v)||document.getElementById("updBar")||busy)return;css();
+  var d=document.createElement("div");d.id="updBar";d.setAttribute("role","status");
+  d.innerHTML='<span>Versi baru tersedia</span><button class="ul" data-u="later">Kemudian</button><button data-u="now">Kemas kini</button>';
+  d.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;if(b.getAttribute("data-u")==="now"){d.remove();apply(v);}else{dismissed=String(v);d.remove();}});
+  document.body.appendChild(d);
+}
 function check(){
   var now=Date.now();if(now-last<60000)return;last=now;
   if(location.protocol==="file:")return;
