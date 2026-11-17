@@ -4,7 +4,14 @@
 <script data-goatcounter="https://uruzan.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <script>
 /* kira acara tanpa nama (jenis pekerjaan sahaja); senyap kalau tiada rangkaian */
-window.rzCount=function(path,title){try{var n=0,go=function(){if(window.goatcounter&&window.goatcounter.count){window.goatcounter.count({path:path,title:title,event:true});}else if(++n<6){setTimeout(go,1500);}};go();}catch(e){}};
+window.rzCount=function(path,title){try{if(/index-demo/.test(location.pathname))return;var n=0,go=function(){if(window.goatcounter&&window.goatcounter.count){window.goatcounter.count({path:path,title:title||path,event:true});}else if(++n<6){setTimeout(go,1500);}};go();}catch(e){}};
+/* statistik tanpa nama: tool dibuka, bahasa, mod pasang, tekan Ada masalah. Tiada isi data atau pengecam peranti. */
+(function(){try{var last="";window.addEventListener("hashchange",function(){var h=location.hash.slice(1);if(/^[a-z]{2,5}$/.test(h)&&h!==last)rzCount("tool/"+h,"Tool: "+h);last=h;});
+document.addEventListener("click",function(e){var t=e.target&&e.target.closest&&e.target.closest("#rzFb,[data-b2=fb]");if(t)rzCount("masalah/buka","Buka Ada masalah");},true);
+window.addEventListener("appinstalled",function(){rzCount("mod/dipasang","App dipasang");});
+setTimeout(function(){try{var d=new Date(),k=d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();if(localStorage.getItem("rzauth_gcday")===k)return;localStorage.setItem("rzauth_gcday",k);
+var lg=localStorage.getItem("rzauth_lang")||"ms",pwa=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone;
+rzCount("bahasa/"+lg,"Bahasa: "+lg);rzCount(pwa?"mod/app":"mod/pelayar",pwa?"Dibuka sebagai app":"Dibuka di pelayar");}catch(e){}},4000);}catch(e){}})();
 </script>
 
 <meta charset="utf-8">
@@ -3019,7 +3026,7 @@ try { zRender(); } catch (e) { console.error(e); }
   const ABOUT = () => `<h3>🛡️ Tentang &amp; privasi</h3><p><b>Uruzan</b> (${EE(VERS())}): urus duit &amp; urusan harian.</p><ul>
 <li>Tiada akaun, tiada pelayan kami. Semua data (belanja, hutang, claim, gambar) disimpan <b>dalam peranti ni sahaja</b>.</li>
 <li>Data kewangan, belanja, hutang, claim dan gambar kau <b>tak pernah dihantar</b> ke mana-mana, dan kami tak jual data kau.</li>
-<li>Kami guna pengira pelawat <b>GoatCounter</b> (tanpa cookie, tanpa nama) untuk tahu berapa orang buka app. Kalau kau pilih Bekerja, Pelajar atau Bersara semasa daftar profil, pilihan itu dikira sebagai nombor sahaja, tanpa nama kau.</li>
+<li>Kami guna pengira pelawat <b>GoatCounter</b> (tanpa cookie, tanpa nama) untuk tahu berapa orang buka app. Kami juga kira tool mana yang dibuka, bahasa yang dipilih, sama ada app dipasang, dan pilihan Bekerja, Pelajar atau Bersara semasa daftar profil. Semuanya nombor sahaja, tanpa nama dan tanpa isi data kau.</li>
 <li>Fon Poppins disimpan bersama app. Satu-satunya hubungan ke pihak luar ialah pengira GoatCounter tadi.</li>
 <li>Kalau kau padam data pelayar atau tukar peranti tanpa backup, data hilang dan tak boleh dipulihkan. Buat backup selalu.</li></ul>`;
   function feedback() { if (window.rzProblemOpen) return window.rzProblemOpen(); window.open("https://wa.me/60176387664?text=" + encodeURIComponent("Maklum balas Uruzan (" + VERS() + ")\n\n"), "_blank", "noopener"); }
@@ -4505,7 +4512,7 @@ body:has(#home:not([hidden])) #rzFb{right:84px!important}
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="20261117109",NOTES=[{"v":"1.109","t":"Penambahbaikan dalaman","l":["Penambahbaikan kecil di belakang tabir","Teks Tentang & privasi dikemas kini"]},{"v":"1.108","t":"Servis Rumah","l":["Tool baru Servis Rumah: aircond, penapis air dan barang lain dengan peringatan bila hampir masa servis","Bila daftar profil, boleh pilih Bekerja, Pelajar atau Bersara untuk cadangan tool di menu (tak wajib, disimpan dalam peranti sahaja)","Butang kongsi lebih besar dan senang ditekan"]},{"v":"1.107","t":"Butang kongsi","l":["Butang kongsi lebih besar dan senang ditekan","Pautan kongsi baru: rajaizzzack.github.io/uruzan"]},{"v": "20261117106", "t": "Tiada skrin putih bila kembali ke app", "l": ["Kemas kini automatik hanya semasa app baru dibuka", "Bila kembali dari WhatsApp atau PDF, app tak muat semula; tunjuk bar 'Kemas kini' sahaja", "Latar pop up tak lagi guna kabur, lebih stabil pada Android"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="20261117110",NOTES=[{"v":"1.110","t":"Penambahbaikan dalaman","l":["Penambahbaikan kecil di belakang tabir"]},{"v":"1.109","t":"Penambahbaikan dalaman","l":["Penambahbaikan kecil di belakang tabir","Teks Tentang & privasi dikemas kini"]},{"v":"1.108","t":"Servis Rumah","l":["Tool baru Servis Rumah: aircond, penapis air dan barang lain dengan peringatan bila hampir masa servis","Bila daftar profil, boleh pilih Bekerja, Pelajar atau Bersara untuk cadangan tool di menu (tak wajib, disimpan dalam peranti sahaja)","Butang kongsi lebih besar dan senang ditekan"]},{"v":"1.107","t":"Butang kongsi","l":["Butang kongsi lebih besar dan senang ditekan","Pautan kongsi baru: rajaizzzack.github.io/uruzan"]},{"v": "20261117106", "t": "Tiada skrin putih bila kembali ke app", "l": ["Kemas kini automatik hanya semasa app baru dibuka", "Bila kembali dari WhatsApp atau PDF, app tak muat semula; tunjuk bar 'Kemas kini' sahaja", "Latar pop up tak lagi guna kabur, lebih stabil pada Android"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 var viaUpd=location.search.indexOf("v=")>=0;try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
