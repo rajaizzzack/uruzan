@@ -4080,29 +4080,62 @@ try { zRender(); } catch (e) { console.error(e); }
   function css() {
     if (document.getElementById("rzLaunchCss")) return;
     var st = document.createElement("style"); st.id = "rzLaunchCss";
-    st.textContent = "#rzLaunch{position:relative;margin:12px 0;padding:16px 44px 16px 16px;border-radius:20px;border:1px solid var(--bd,#dde3e8);background:linear-gradient(135deg,color-mix(in srgb,var(--ac,#0d9488) 12%,var(--card,#fff)),var(--card,#fff) 75%);box-shadow:0 1px 2px rgba(16,24,40,.04),0 8px 20px -10px rgba(16,24,40,.14)}" +
-      "#rzLaunch .lt{font-weight:800;font-size:15px;line-height:1.25}#rzLaunch .lc{margin:6px 0 2px;font-size:26px;font-weight:800;letter-spacing:.2px;color:var(--ac,#0d9488);font-variant-numeric:tabular-nums}" +
-      "#rzLaunch .ld{font-size:12.5px;line-height:1.4;color:var(--mut,#667085)}#rzLaunch .lx{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:0;background:transparent;color:var(--mut,#667085);font-size:18px;line-height:1;cursor:pointer}" +
-      "#rzLaunch .lv{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--mut,#667085);flex-wrap:wrap}#rzLaunch .lv button{min-height:44px;min-width:44px;padding:0 14px;border-radius:12px;border:1px solid var(--bd,#dde3e8);background:var(--card,#fff);font-size:20px;cursor:pointer}#rzLaunch .lv button:active{transform:scale(.96)}" +
-      "#rzLaunch .lg{display:inline-block;margin-top:10px;padding:10px 16px;border-radius:12px;background:var(--ac,#0d9488);color:#fff;font-weight:700;text-decoration:none;font-size:14px}";
+    st.textContent =
+      "#rzLaunch{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.55);opacity:0;transition:opacity .25s ease}" +
+      "#rzLaunch.in{opacity:1}" +
+      "#rzLaunch .lb{position:relative;width:100%;max-width:340px;max-height:100%;overflow:auto;padding:26px 20px 20px;border-radius:26px;background:var(--card,#fff);color:var(--tx,#1c2523);box-shadow:0 24px 60px -12px rgba(0,0,0,.45);text-align:center;transform:translateY(14px) scale(.96);transition:transform .3s cubic-bezier(.2,.9,.3,1.2)}" +
+      "#rzLaunch.in .lb{transform:none}" +
+      "#rzLaunch .lx{position:absolute;top:6px;right:6px;width:44px;height:44px;border-radius:50%;border:0;background:transparent;color:var(--mut,#667085);font-size:26px;line-height:1;cursor:pointer}#rzLaunch .lx:active{background:rgba(0,0,0,.07)}" +
+      "#rzLaunch .li{font-size:34px;line-height:1;margin-bottom:8px}" +
+      "#rzLaunch .lt{font-weight:800;font-size:18px;line-height:1.25;padding:0 18px}" +
+      "#rzLaunch .lw{margin:6px 0 0;font-size:13px;color:var(--mut,#667085)}" +
+      "#rzLaunch .lcd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0 12px}" +
+      "#rzLaunch .lcd div{padding:10px 0 8px;border-radius:14px;background:color-mix(in srgb,var(--ac,#0f766e) 10%,var(--card,#fff));border:1px solid color-mix(in srgb,var(--ac,#0f766e) 22%,transparent)}" +
+      "#rzLaunch .lcd b{display:block;font-size:24px;font-weight:800;color:var(--ac,#0f766e);font-variant-numeric:tabular-nums;line-height:1.1}" +
+      "#rzLaunch .lcd span{display:block;margin-top:2px;font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--mut,#667085)}" +
+      "#rzLaunch .ld{margin:0;font-size:13px;line-height:1.5;color:var(--mut,#667085)}" +
+      "#rzLaunch .lq{margin:18px 0 8px;font-size:13px;font-weight:600}" +
+      "#rzLaunch .lv{display:grid;grid-template-columns:1fr 1fr;gap:10px}" +
+      "#rzLaunch .lv button{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;padding:0 8px;min-height:48px;border-radius:14px;border:1px solid var(--bd,#dde3e8);background:var(--card,#fff);color:inherit;font:inherit;font-weight:700;font-size:14px;cursor:pointer;transition:transform .12s ease,border-color .15s ease}" +
+      "#rzLaunch .lv button span{font-size:20px;line-height:1}#rzLaunch .lv button:active{transform:scale(.95)}#rzLaunch .lv button:hover{border-color:var(--ac,#0f766e)}" +
+      "#rzLaunch .lth{grid-column:1/-1;padding:13px;border-radius:14px;background:color-mix(in srgb,var(--ac,#0f766e) 10%,var(--card,#fff));font-weight:700;font-size:14px;animation:rzLaunchPop .35s ease}" +
+      "@keyframes rzLaunchPop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}" +
+      "#rzLaunch .lg{display:block;margin-top:16px;padding:13px 16px;border-radius:14px;background:var(--ac,#0f766e);color:#fff;font-weight:700;text-decoration:none;font-size:15px}" +
+      "@media (prefers-reduced-motion:reduce){#rzLaunch,#rzLaunch .lb,#rzLaunch .lth{transition:none;animation:none}}";
     document.head.appendChild(st);
   }
+  function onKey(e) { if (e.key === "Escape") close(); }
+  function close() {
+    var c = document.getElementById("rzLaunch"); if (!c) return;
+    try { localStorage.setItem(KEY, today()); } catch (e) {}
+    document.removeEventListener("keydown", onKey); c.classList.remove("in"); c.dataset.gone = "1";
+    setTimeout(function () { if (c.parentNode) c.remove(); }, 260);
+  }
   function tick() {
-    var g = document.getElementById("rzGreet"), c = document.getElementById("rzLaunch");
-    if (!g || hid() || location.hash.slice(1) !== "") { if (c) c.remove(); return; }
+    var c = document.getElementById("rzLaunch");
+    if (c && c.dataset.gone) return;
+    if (hid() || !document.getElementById("rzGreet") || location.hash.slice(1) !== "") { if (c) { document.removeEventListener("keydown", onKey); c.remove(); } return; }
     css();
     var now = Date.now(), on = now >= LAUNCH, mode = on ? "on" : "off";
-    if (!c) { c = document.createElement("div"); c.id = "rzLaunch"; g.after(c); }
+    if (!c) {
+      c = document.createElement("div"); c.id = "rzLaunch"; c.setAttribute("role", "dialog"); c.setAttribute("aria-modal", "true"); c.setAttribute("aria-label", "Uruzan versi rasmi");
+      document.body.appendChild(c); document.addEventListener("keydown", onKey);
+      c.addEventListener("click", function (e) { if (e.target === c) close(); });
+      requestAnimationFrame(function () { requestAnimationFrame(function () { c.classList.add("in"); }); });
+    }
     if (c.dataset.m !== mode) {
       c.dataset.m = mode;
-      c.innerHTML = on
-        ? '<button class="lx" type="button" aria-label="Tutup">×</button><div class="lt">Uruzan versi rasmi dah dilancarkan</div><div class="ld" style="margin-top:6px">Pindahkan data kau ke versi baharu. Selepas log masuk di sana, pilih Profil, Akaun awan, Pindah dari versi lama. Data dalam app ni tak dipadam.</div><a class="lg" href="https://uruzan.app" target="_blank" rel="noopener">Buka Uruzan</a>'
-        : '<button class="lx" type="button" aria-label="Tutup">×</button><div class="lt">Uruzan versi rasmi akan dilancarkan</div><div class="lc" id="rzLaunchT"></div><div class="ld">Ahad, 22 Nov 2026, jam 8 malam. Data kau selamat dan boleh dipindahkan sendiri bila dah lancar.</div><div class="lv" id="rzLaunchV"></div>';
-      c.querySelector(".lx").onclick = function () { try { localStorage.setItem(KEY, today()); } catch (e) {} c.remove(); };
+      c.innerHTML = '<div class="lb"><button class="lx" type="button" aria-label="Tutup">×</button>' + (on
+        ? '<div class="li">🎉</div><div class="lt">Uruzan versi rasmi dah dilancarkan</div><p class="ld" style="margin-top:10px">Pindahkan data kau ke versi baharu. Selepas log masuk di sana, pilih Profil, Akaun awan, Pindah dari versi lama. Data dalam app ni tak dipadam.</p><a class="lg" href="https://uruzan.app" target="_blank" rel="noopener">Buka Uruzan</a>'
+        : '<div class="li">🚀</div><div class="lt">Uruzan versi rasmi akan dilancarkan</div><p class="lw">Ahad, 22 Nov 2026, jam 8 malam</p><div class="lcd" id="rzLaunchT" role="timer"><div><b>0</b><span>Hari</span></div><div><b>00</b><span>Jam</span></div><div><b>00</b><span>Minit</span></div><div><b>00</b><span>Saat</span></div></div><p class="ld">Data kau selamat dan boleh dipindahkan sendiri bila dah lancar.</p><div class="lq" id="rzLaunchQ">Suka tak berita ni?</div><div class="lv" id="rzLaunchV"></div>') + '</div>';
+      c.querySelector(".lx").onclick = close;
       var lv = c.querySelector("#rzLaunchV");
       if (lv) {
         var voted = ""; try { voted = localStorage.getItem("rz_launch_vote") || ""; } catch (e) {}
-        var show = function (v) { lv.innerHTML = v ? "Terima kasih atas maklum balas kau 🙏" : 'Suka tak berita ni?<button type="button" data-v="suka" aria-label="Suka">👍</button><button type="button" data-v="tak" aria-label="Tak suka">👎</button>'; };
+        var show = function (v) {
+          var q = c.querySelector("#rzLaunchQ"); if (q) q.style.display = v ? "none" : "";
+          lv.innerHTML = v ? '<div class="lth">Terima kasih atas maklum balas kau 🙏</div>' : '<button type="button" data-v="suka" aria-label="Suka"><span>👍</span>Suka</button><button type="button" data-v="tak" aria-label="Tak suka"><span>👎</span>Tak suka</button>';
+        };
         show(voted);
         lv.onclick = function (ev) {
           var b = ev.target.closest && ev.target.closest("button[data-v]"); if (!b) return;
@@ -4113,7 +4146,10 @@ try { zRender(); } catch (e) { console.error(e); }
         };
       }
     }
-    var t = document.getElementById("rzLaunchT"); if (t) t.textContent = "Lagi " + left(LAUNCH - now);
+    var t = c.querySelector("#rzLaunchT");
+    if (t) { var s = Math.max(0, Math.floor((LAUNCH - now) / 1000)), p = [Math.floor(s / 86400), Math.floor(s % 86400 / 3600), Math.floor(s % 3600 / 60), s % 60], bs = t.querySelectorAll("b");
+      for (var i = 0; i < 4; i++) bs[i].textContent = i === 0 ? String(p[0]) : pad(p[i]);
+      t.setAttribute("aria-label", "Lagi " + left(LAUNCH - now)); }
   }
   setInterval(tick, 1000); setTimeout(tick, 300);
 })();
@@ -5017,7 +5053,7 @@ body:has(#home:not([hidden])) #rzFb{right:84px!important}
 /* ===== KEMAS KINI APP ===== */
 (function(){
 "use strict";
-var VER="20261119123",NOTES=[{"v":"1.123","t":"Maklum balas kad pelancaran","l":["Tekan 👍 atau 👎 pada kad Uruzan versi rasmi untuk beritahu kami pendapat kau"]},{"v":"1.122","t":"Uruzan versi rasmi akan datang","l":["Uruzan versi rasmi akan dilancarkan pada Ahad, 22 Nov 2026, jam 8 malam","Data kau selamat dan boleh dipindahkan sendiri bila dah lancar","Kad kira detik di skrin utama"]},{"v":"1.121","t":"PDF untuk semua tool","l":["Sewa Rumah, Bil, Servis Kenderaan, Hutang, Belanja, Langganan, Simpanan, Split Bill, Log Minyak, Waranti, Tarikh Penting, Nota, OT & Cuti dan Servis Rumah kini ada Share / Lihat / Simpan PDF"]},{"v":"1.120","t":"Siapa bayar ikut nama pendapatan","l":["Nama yang ditambah di Pendapatan berdua (cth Yana) kini ada dalam senarai Siapa bayar"]},{"v":"1.119","t":"QR dalam PDF + pilih Siapa bayar","l":["Semua PDF ada kod QR terus ke Uruzan, tak perlu hantar pautan","Siapa bayar dalam Bajet Pasangan kini senarai pilihan nama (termasuk Berdua)"]},{"v":"1.118","t":"PDF lebih kemas + PDF Bajet Pasangan","l":["Semua PDF ada watermark URUZAN, kepala dan kaki halaman yang sama","Bajet Pasangan boleh dikongsi, dilihat dan disimpan sebagai PDF","Paparan Lihat PDF pun ada watermark"]},{"v":"1.117","t":"Baris belanja lebih kemas","l":["Bajet Pasangan: nama dan Siapa bayar kini tak terpotong di telefon"]},{"v":"1.116","t":"Bajet Pasangan lebih lengkap","l":["Pelan: baris belanja (Makan, Minyak dan lain-lain) boleh diedit, ditambah dan ditentukan siapa bayar","Nampak siapa belanja berapa ikut kategori dan jenis","Peringatan di skrin utama bila masuk bulan baru untuk Sewa Rumah"]},{"v":"1.115","t":"Bulan baru","l":["Dibetulkan: bila buka app pada hari baru, Total Bulanan, Belanja Harian dan tarikh belanja baharu ikut hari ni, bukan bulan yang terakhir dilihat"]},{"v":"1.114","t":"Pelan bulan ni","l":["Bajet Pasangan: pelan bulan ni boleh diedit (pendapatan, komitmen tetap, kategori, simpanan)","Hantar pelan kepada pasangan guna pautan"]},{"v":"1.113","t":"Dikemas dan dipermudah","l":["Skrin utama lebih ringkas: amaran simpanan boleh ditutup, Kongsi dan Ada masalah dialih ke bawah","Profil dikumpul: Diri, Paparan & bunyi, Data & bantuan","Nama tool dijelaskan: Sewa Rumah dan Bajet Pasangan","Total Bulanan: pengguna baharu tick sendiri sumber yang nak dikira","Butang lebih besar dan jadual tak lagi terpotong"]},{"v":"1.112","t":"Bajet Pasangan","l":["Tool baru Bajet Pasangan: gabungkan bajet dengan pasangan guna pautan ringkasan (tanpa pelayan)","Ringkasan hanya jumlah ikut kategori, bukan setiap belanja"]},{"v":"1.111","t":"Bahasa Indonesia","l":["Bahasa Indonesia ditambah dalam pilihan bahasa","Terjemahan dilengkapkan di banyak skrin"]},{"v":"1.110","t":"Penambahbaikan dalaman","l":["Penambahbaikan kecil di belakang tabir"]},{"v":"1.109","t":"Penambahbaikan dalaman","l":["Penambahbaikan kecil di belakang tabir","Teks Tentang & privasi dikemas kini"]},{"v":"1.108","t":"Servis Rumah","l":["Tool baru Servis Rumah: aircond, penapis air dan barang lain dengan peringatan bila hampir masa servis","Bila daftar profil, boleh pilih Bekerja, Pelajar atau Bersara untuk cadangan tool di menu (tak wajib, disimpan dalam peranti sahaja)","Butang kongsi lebih besar dan senang ditekan"]},{"v":"1.107","t":"Butang kongsi","l":["Butang kongsi lebih besar dan senang ditekan","Pautan kongsi baru: rajaizzzack.github.io/uruzan"]},{"v": "20261117106", "t": "Tiada skrin putih bila kembali ke app", "l": ["Kemas kini automatik hanya semasa app baru dibuka", "Bila kembali dari WhatsApp atau PDF, app tak muat semula; tunjuk bar 'Kemas kini' sahaja", "Latar pop up tak lagi guna kabur, lebih stabil pada Android"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
+var VER="20261119124",NOTES=[{"v":"1.124","t":"Pop up pelancaran Uruzan rasmi","l":["Pop up kira detik pelancaran, tekan × untuk tutup","Butang Suka dan Tak suka yang lebih kemas"]},{"v":"1.123","t":"Maklum balas kad pelancaran","l":["Tekan 👍 atau 👎 pada kad Uruzan versi rasmi untuk beritahu kami pendapat kau"]},{"v":"1.122","t":"Uruzan versi rasmi akan datang","l":["Uruzan versi rasmi akan dilancarkan pada Ahad, 22 Nov 2026, jam 8 malam","Data kau selamat dan boleh dipindahkan sendiri bila dah lancar","Kad kira detik di skrin utama"]},{"v":"1.121","t":"PDF untuk semua tool","l":["Sewa Rumah, Bil, Servis Kenderaan, Hutang, Belanja, Langganan, Simpanan, Split Bill, Log Minyak, Waranti, Tarikh Penting, Nota, OT & Cuti dan Servis Rumah kini ada Share / Lihat / Simpan PDF"]},{"v":"1.120","t":"Siapa bayar ikut nama pendapatan","l":["Nama yang ditambah di Pendapatan berdua (cth Yana) kini ada dalam senarai Siapa bayar"]},{"v":"1.119","t":"QR dalam PDF + pilih Siapa bayar","l":["Semua PDF ada kod QR terus ke Uruzan, tak perlu hantar pautan","Siapa bayar dalam Bajet Pasangan kini senarai pilihan nama (termasuk Berdua)"]},{"v":"1.118","t":"PDF lebih kemas + PDF Bajet Pasangan","l":["Semua PDF ada watermark URUZAN, kepala dan kaki halaman yang sama","Bajet Pasangan boleh dikongsi, dilihat dan disimpan sebagai PDF","Paparan Lihat PDF pun ada watermark"]},{"v":"1.117","t":"Baris belanja lebih kemas","l":["Bajet Pasangan: nama dan Siapa bayar kini tak terpotong di telefon"]},{"v":"1.116","t":"Bajet Pasangan lebih lengkap","l":["Pelan: baris belanja (Makan, Minyak dan lain-lain) boleh diedit, ditambah dan ditentukan siapa bayar","Nampak siapa belanja berapa ikut kategori dan jenis","Peringatan di skrin utama bila masuk bulan baru untuk Sewa Rumah"]},{"v":"1.115","t":"Bulan baru","l":["Dibetulkan: bila buka app pada hari baru, Total Bulanan, Belanja Harian dan tarikh belanja baharu ikut hari ni, bukan bulan yang terakhir dilihat"]},{"v":"1.114","t":"Pelan bulan ni","l":["Bajet Pasangan: pelan bulan ni boleh diedit (pendapatan, komitmen tetap, kategori, simpanan)","Hantar pelan kepada pasangan guna pautan"]},{"v":"1.113","t":"Dikemas dan dipermudah","l":["Skrin utama lebih ringkas: amaran simpanan boleh ditutup, Kongsi dan Ada masalah dialih ke bawah","Profil dikumpul: Diri, Paparan & bunyi, Data & bantuan","Nama tool dijelaskan: Sewa Rumah dan Bajet Pasangan","Total Bulanan: pengguna baharu tick sendiri sumber yang nak dikira","Butang lebih besar dan jadual tak lagi terpotong"]},{"v":"1.112","t":"Bajet Pasangan","l":["Tool baru Bajet Pasangan: gabungkan bajet dengan pasangan guna pautan ringkasan (tanpa pelayan)","Ringkasan hanya jumlah ikut kategori, bukan setiap belanja"]},{"v":"1.111","t":"Bahasa Indonesia","l":["Bahasa Indonesia ditambah dalam pilihan bahasa","Terjemahan dilengkapkan di banyak skrin"]},{"v":"1.110","t":"Penambahbaikan dalaman","l":["Penambahbaikan kecil di belakang tabir"]},{"v":"1.109","t":"Penambahbaikan dalaman","l":["Penambahbaikan kecil di belakang tabir","Teks Tentang & privasi dikemas kini"]},{"v":"1.108","t":"Servis Rumah","l":["Tool baru Servis Rumah: aircond, penapis air dan barang lain dengan peringatan bila hampir masa servis","Bila daftar profil, boleh pilih Bekerja, Pelajar atau Bersara untuk cadangan tool di menu (tak wajib, disimpan dalam peranti sahaja)","Butang kongsi lebih besar dan senang ditekan"]},{"v":"1.107","t":"Butang kongsi","l":["Butang kongsi lebih besar dan senang ditekan","Pautan kongsi baru: rajaizzzack.github.io/uruzan"]},{"v": "20261117106", "t": "Tiada skrin putih bila kembali ke app", "l": ["Kemas kini automatik hanya semasa app baru dibuka", "Bila kembali dari WhatsApp atau PDF, app tak muat semula; tunjuk bar 'Kemas kini' sahaja", "Latar pop up tak lagi guna kabur, lebih stabil pada Android"]}],last=0,shown=false,SK="rz_seenver",DK="rz_updskip";
 var ls={g:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},s:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 var viaUpd=location.search.indexOf("v=")>=0;try{if(location.search.indexOf("v=")>=0&&history.replaceState)history.replaceState(null,"",location.pathname+location.hash);}catch(e){}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
