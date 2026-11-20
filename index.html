@@ -4147,7 +4147,7 @@ try { zRender(); } catch (e) { console.error(e); }
     css();
     var now = Date.now(), on = now >= LAUNCH, mode = on ? "on" : "off";
     if (!c) {
-      c = document.createElement("div"); c.id = "rzLaunch"; c.setAttribute("role", "dialog"); c.setAttribute("aria-modal", "true"); c.setAttribute("aria-label", "Uruzan versi rasmi");
+      c = document.createElement("div"); c.id = "rzLaunch"; c.setAttribute("role", "dialog"); c.setAttribute("aria-modal", "true"); c.setAttribute("aria-label", "Uruzan official");
       document.body.appendChild(c); document.addEventListener("keydown", onKey);
       c.addEventListener("click", function (e) { if (e.target === c) close(); });
       requestAnimationFrame(function () { requestAnimationFrame(function () { c.classList.add("in"); setTimeout(function () { intro(c); }, 220); }); });
@@ -4155,7 +4155,7 @@ try { zRender(); } catch (e) { console.error(e); }
     if (c.dataset.m !== mode) {
       c.dataset.m = mode;
       c.innerHTML = '<div class="lb"><button class="lx" type="button" aria-label="Tutup">×</button>' + (on
-        ? '<div class="li">🎉</div><div class="lt">Uruzan versi rasmi dah dilancarkan lebih awal</div><p class="ld" style="margin-top:10px">Kami lancarkan lebih awal daripada jadual (Ahad, 22 Nov, jam 8 malam) kerana semuanya dah sedia. Pendaftaran dah dibuka untuk semua. Pindahkan data kau ke versi baharu. Selepas log masuk di sana, pilih Profil, Akaun awan, Pindah dari versi lama. Data dalam app ni tak dipadam.</p><a class="lg" href="https://uruzan.app" target="_blank" rel="noopener">Buka Uruzan</a>'
+        ? '<div class="li">🎉</div><div class="lt">Uruzan official dah dilancarkan</div><p class="ld" style="margin-top:10px">Versi rasmi dah ada di <b>uruzan.app</b>, dilancarkan lebih awal daripada jadual. Pendaftaran dah dibuka untuk semua. Pergi ke uruzan.app, kemudian pindahkan data kau: Profil, Akaun awan, Pindah dari versi lama. Data dalam app ni tak dipadam.</p><a class="lg" href="https://uruzan.app" target="_self">Pergi ke uruzan.app</a>'
         : '<div class="li">🚀</div><div class="lt">Uruzan versi rasmi akan dilancarkan</div><p class="lw">Ahad, 22 Nov 2026, jam 8 malam</p><div class="lcd" id="rzLaunchT" role="timer"><div><b>0</b><span>Hari</span></div><div><b>00</b><span>Jam</span></div><div><b>00</b><span>Minit</span></div><div><b>00</b><span>Saat</span></div></div><p class="ld">Data kau selamat dan boleh dipindahkan sendiri bila dah lancar.</p><div class="lq" id="rzLaunchQ">Suka tak berita ni?</div><div class="lv" id="rzLaunchV"></div>') + '</div>';
       c.querySelector(".lx").onclick = close;
       var lv = c.querySelector("#rzLaunchV");
@@ -5152,7 +5152,7 @@ function after(){
   var seen=ls.g(SK);ls.s(SK,VER);
   if(!seen||Number(seen)>=Number(VER))return;
   var L=since(seen,VER);if(!L.length)return;
-  setTimeout(function(){sheet("✨ Baru dikemas kini","Ini yang berubah",L,'<a class="go" href="https://uruzan.app" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px">Pindah ke uruzan.app</a><button class="go" data-u="close">Okay, faham</button>');},1800);
+  setTimeout(function(){sheet("✨ Baru dikemas kini","Ini yang berubah",L,'<a class="go" href="https://uruzan.app" target="_self" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px">Pindah ke uruzan.app</a><button class="go" data-u="close">Okay, faham</button>');},1800);
 }
 function rems(){try{return typeof zRem==="function"?zRem():[];}catch(e){return[];}}
 function dot(){
@@ -5160,7 +5160,7 @@ function dot(){
   var on=uns||R.length>0;if(i)i.hidden=!on;if(on&&!b._r){b._r=1;b.classList.add("ring");setTimeout(function(){b.classList.remove("ring");},1600);}
 }
 function bell(){
-  var n=NOTES[0],R=rems(),h='<a href="https://uruzan.app" target="_blank" rel="noopener" style="display:block;margin:12px 0 4px;padding:13px 14px;border-radius:14px;background:var(--ac,#0f766e);color:#fff;text-decoration:none;font-weight:800;font-size:14px;line-height:1.35">🎉 Uruzan versi rasmi dah dilancarkan<span style="display:block;font-weight:500;font-size:12.5px;margin-top:2px;opacity:.92">Pendaftaran dibuka. Tekan untuk pindah ke uruzan.app</span></a>';
+  var n=NOTES[0],R=rems(),h='<a href="https://uruzan.app" target="_self" style="display:block;margin:12px 0 4px;padding:13px 14px;border-radius:14px;background:var(--ac,#0f766e);color:#fff;text-decoration:none;font-weight:800;font-size:14px;line-height:1.35">🎉 Uruzan versi rasmi dah dilancarkan<span style="display:block;font-weight:500;font-size:12.5px;margin-top:2px;opacity:.92">Pendaftaran dibuka. Tekan untuk pindah ke uruzan.app</span></a>';
   if(n){h+='<div class="rl" style="border:0;margin-top:12px"><b>✨ Terbaru: '+esc(n.t)+'</b><ul>'+(n.l||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ul></div>';ls.s("rz_newsx",String(n.v));}
   h+='<div class="rl"><b>🔔 Peringatan</b>'+(R.length?R.map(function(r){var d=r.days,c=d==null?"Semak":d<0?"Lewat "+(-d)+" hari":d===0?"Hari ni":d+" hari";return '<div class="rr" data-act="open" data-t="'+esc(r.tool)+'"><span class="nm t">'+esc(r.t)+'</span><span style="font-weight:700;color:'+(d!=null&&d<0?"#dc2626":d!=null&&d<=(r.nb||14)?"#d97706":"inherit")+'">'+c+'</span></div>';}).join(""):'<div style="opacity:.65;padding:8px 0">Tiada yang dekat 👍</div>')+'</div>';
   css();var o=document.getElementById("updSh");if(o)o.remove();
